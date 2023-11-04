@@ -1,0 +1,15 @@
+../Core/Src/sparkfun_isl29125.c:34:9:ISL29125_init	24	static
+../Core/Src/sparkfun_isl29125.c:55:9:ISL29125_reset	24	static
+../Core/Src/sparkfun_isl29125.c:75:9:ISL29125_config	24	static
+../Core/Src/sparkfun_isl29125.c:107:6:ISL29125_setUpperThreshold	16	static
+../Core/Src/sparkfun_isl29125.c:113:6:ISL29125_setLowerThreshold	16	static
+../Core/Src/sparkfun_isl29125.c:119:10:ISL29125_readUpperThreshold	16	static
+../Core/Src/sparkfun_isl29125.c:125:10:ISL29125_readLowerThreshold	16	static
+../Core/Src/sparkfun_isl29125.c:131:10:ISL29125_readRed	16	static
+../Core/Src/sparkfun_isl29125.c:137:10:ISL29125_readGreen	16	static
+../Core/Src/sparkfun_isl29125.c:143:10:ISL29125_readBlue	16	static
+../Core/Src/sparkfun_isl29125.c:149:9:ISL29125_readStatus	16	static
+../Core/Src/sparkfun_isl29125.c:155:9:I2C_read8	40	static
+../Core/Src/sparkfun_isl29125.c:176:9:I2C_write8	40	static
+../Core/Src/sparkfun_isl29125.c:192:10:I2C_read16	40	static
+../Core/Src/sparkfun_isl29125.c:216:10:I2C_write16	40	static
