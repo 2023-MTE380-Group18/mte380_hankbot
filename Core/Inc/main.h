@@ -67,14 +67,6 @@ void Error_Handler(void);
 #define USART_RX_GPIO_Port GPIOA
 #define LD2_Pin GPIO_PIN_5
 #define LD2_GPIO_Port GPIOA
-#define Encoder_R_A_Pin GPIO_PIN_6
-#define Encoder_R_A_GPIO_Port GPIOA
-#define Encoder_R_B_Pin GPIO_PIN_7
-#define Encoder_R_B_GPIO_Port GPIOA
-#define SERVO_WRIST_Pin GPIO_PIN_0
-#define SERVO_WRIST_GPIO_Port GPIOB
-#define SERVO_GRABBER_Pin GPIO_PIN_1
-#define SERVO_GRABBER_GPIO_Port GPIOB
 #define MTR_SPEED_L_Pin GPIO_PIN_10
 #define MTR_SPEED_L_GPIO_Port GPIOA
 #define MTR_SPEED_R_Pin GPIO_PIN_11

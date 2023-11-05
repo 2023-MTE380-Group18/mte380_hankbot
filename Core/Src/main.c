@@ -22,13 +22,14 @@
 #include "tim.h"
 #include "usart.h"
 #include "gpio.h"
-#include "sparkfun_isl29125.h"
-#include <stdio.h>
-#include <string.h>
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
+#include "sparkfun_isl29125.h"
+#include "servo.h"
 
+#include <stdio.h>
+#include <string.h>
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -92,31 +93,65 @@ int main(void)
   /* Initialize all configured peripherals */
   MX_GPIO_Init();
   MX_USART2_UART_Init();
-  MX_I2C1_Init();
   MX_I2C3_Init();
   MX_TIM1_Init();
   MX_TIM2_Init();
   MX_TIM3_Init();
+  MX_I2C1_Init();
   /* USER CODE BEGIN 2 */
+  ISL29125_Init(&hi2c1);
+  ISL29125_Init(&hi2c3);
+  ISL29125_Config(&hi2c1, CFG1_MODE_RGB | CFG1_10KLUX, CFG2_IR_ADJUST_HIGH, CFG3_NO_INT);
+  ISL29125_Config(&hi2c3, CFG1_MODE_RGB | CFG1_10KLUX, CFG2_IR_ADJUST_HIGH, CFG3_NO_INT);
+
+  HAL_TIM_Base_Start(&htim3);
+  Servo_Init(&htim3, TIM_CHANNEL_3); //Wrist Servo [TIM3 CH3]
+  Servo_Init(&htim3, TIM_CHANNEL_4); //Gripper Servo [TIM3 CH4]
+
   HAL_GPIO_TogglePin(GPIOA, GPIO_PIN_5);
-  ISL29125_init(&hi2c1);
-  ISL29125_init(&hi2c3);
-  ISL29125_config(&hi2c1, CFG1_MODE_RGB | CFG1_10KLUX, CFG2_IR_ADJUST_HIGH, CFG3_NO_INT);
-  ISL29125_config(&hi2c3, CFG1_MODE_RGB | CFG1_10KLUX, CFG2_IR_ADJUST_HIGH, CFG3_NO_INT);
   /* USER CODE END 2 */
 
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
   while (1)
   {
-	color_data[0] = ISL29125_readRed(&hi2c1);
-  color_data[1] = ISL29125_readBlue(&hi2c1);
-  color_data[2] = ISL29125_readGreen(&hi2c1);
+      //MANDALORIAN DEATH SEQUENCE
+      // Use functions from servo.h for better readability later
+      htim3.Instance->CCR3 = 145+70; // Claw Wrist Up
+      htim3.Instance->CCR4 = 40; // Gripper Open
+      HAL_Delay(5000);
+      htim3.Instance->CCR3 = 145; // Claw Wrist Down
+      HAL_Delay(1000);
+      htim3.Instance->CCR4 = 120; // Gripper Close
+      HAL_Delay(1000);
+      htim3.Instance->CCR3 = 145+70; // Claw Wrist Up
+      HAL_Delay(1000);
+      htim3.Instance->CCR3 = 145; // Claw Wrist Down
+      HAL_Delay(1000);
+      htim3.Instance->CCR3 = 145+70; // Claw Wrist Up
+      HAL_Delay(1000);
+      htim3.Instance->CCR3 = 145; // Claw Wrist Down
+      HAL_Delay(1000);
+      htim3.Instance->CCR3 = 145+70; // Claw Wrist Up
+      HAL_Delay(1000);
+      htim3.Instance->CCR3 = 145; // Claw Wrist Down
+      HAL_Delay(1000);
+      htim3.Instance->CCR3 = 145+70; // Claw Wrist Up
+      HAL_Delay(1000);
+      htim3.Instance->CCR3 = 145; // Claw Wrist Down
+      HAL_Delay(1000);
+      htim3.Instance->CCR3 = 145+70; // Claw Wrist Up
+      HAL_Delay(1000);
+      htim3.Instance->CCR3 = 145; // Claw Wrist Down
 
-  // Send out buffer
-  char buf[64];
-  sprintf(buf, "Red: %d, Blue: %d, Green: %d\r\n", color_data[0], color_data[1], color_data[2]);
-  HAL_UART_Transmit(&huart2, buf, strlen(buf), HAL_MAX_DELAY);
+      color_data[0] = ISL29125_ReadRed(&hi2c1);
+      color_data[1] = ISL29125_ReadBlue(&hi2c1);
+      color_data[2] = ISL29125_ReadGreen(&hi2c1);
+
+      // Send out buffer
+      char buf[64];
+      sprintf(buf, "Red: %d, Blue: %d, Green: %d\r\n", color_data[0], color_data[1], color_data[2]);
+      HAL_UART_Transmit(&huart2, buf, strlen(buf), HAL_MAX_DELAY);
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */

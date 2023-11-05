@@ -111,25 +111,25 @@ Modified by Ethan Kim on 4 Nov 2023 for use on STM32-F410RE
 #define FLAG_CONV_B 0x30
 
 // SparkFunISL29125 Functions
-uint8_t ISL29125_init(I2C_HandleTypeDef *hi2c);
-uint8_t ISL29125_reset(I2C_HandleTypeDef *hi2c);
-uint8_t ISL29125_config(I2C_HandleTypeDef *hi2c, uint8_t config1, uint8_t config2, uint8_t config3);
+uint8_t ISL29125_Init(I2C_HandleTypeDef *hi2c);
+uint8_t ISL29125_Reset(I2C_HandleTypeDef *hi2c);
+uint8_t ISL29125_Config(I2C_HandleTypeDef *hi2c, uint8_t config1, uint8_t config2, uint8_t config3);
 
-void ISL29125_setUpperThreshold(I2C_HandleTypeDef *hi2c, uint16_t data);
-void ISL29125_setLowerThreshold(I2C_HandleTypeDef *hi2c, uint16_t data);
-uint16_t ISL29125_readUpperThreshold(I2C_HandleTypeDef *hi2c);
-uint16_t ISL29125_readLowerThreshold(I2C_HandleTypeDef *hi2c);
+void ISL29125_SetUpperThreshold(I2C_HandleTypeDef *hi2c, uint16_t data);
+void ISL29125_SetLowerThreshold(I2C_HandleTypeDef *hi2c, uint16_t data);
+uint16_t ISL29125_ReadUpperThreshold(I2C_HandleTypeDef *hi2c);
+uint16_t ISL29125_ReadLowerThreshold(I2C_HandleTypeDef *hi2c);
 
-uint16_t ISL29125_readRed(I2C_HandleTypeDef *hi2c);
-uint16_t ISL29125_readGreen(I2C_HandleTypeDef *hi2c);
-uint16_t ISL29125_readBlue(I2C_HandleTypeDef *hi2c);
+uint16_t ISL29125_ReadRed(I2C_HandleTypeDef *hi2c);
+uint16_t ISL29125_ReadGreen(I2C_HandleTypeDef *hi2c);
+uint16_t ISL29125_ReadBlue(I2C_HandleTypeDef *hi2c);
 
-uint8_t ISL29125_readStatus(I2C_HandleTypeDef *hi2c);
+uint8_t ISL29125_ReadStatus(I2C_HandleTypeDef *hi2c);
 
 // Generic I2C Read/Writes
-uint8_t I2C_read8(I2C_HandleTypeDef *hi2c, uint8_t reg);
-uint8_t I2C_write8(I2C_HandleTypeDef *hi2c, uint8_t reg, uint8_t data);
-uint16_t I2C_read16(I2C_HandleTypeDef *hi2c, uint8_t reg);
-uint16_t I2C_write16(I2C_HandleTypeDef *hi2c, uint8_t reg, uint16_t data);
+uint8_t I2C_Read8(I2C_HandleTypeDef *hi2c, uint8_t reg);
+uint8_t I2C_Write8(I2C_HandleTypeDef *hi2c, uint8_t reg, uint8_t data);
+uint16_t I2C_Read16(I2C_HandleTypeDef *hi2c, uint8_t reg);
+uint16_t I2C_Write16(I2C_HandleTypeDef *hi2c, uint8_t reg, uint16_t data);
 
 #endif /* INC_SPARKFUN_ISL29125_H_ */

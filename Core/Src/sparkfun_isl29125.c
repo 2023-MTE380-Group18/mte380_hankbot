@@ -31,37 +31,37 @@ static const uint8_t ISL_I2C_8BIT_ADDR = ISL_I2C_ADDR << 1;
 // Verifies sensor is there by checking its device ID
 // Resets all registers/configurations to factory default
 // Sets configuration registers for the common use case
-uint8_t ISL29125_init(I2C_HandleTypeDef *hi2c) {
+uint8_t ISL29125_Init(I2C_HandleTypeDef *hi2c) {
     uint8_t ret = 0;
     uint8_t data = 0x00;
 
     //assume MX_I2C#_Init() is already called
 
     // Check device ID
-    data = I2C_read8(hi2c, DEVICE_ID);
+    data = I2C_Read8(hi2c, DEVICE_ID);
     if (data != 0x7D)
       ret |= 1;
 
     // Reset registers
-    ret |= ISL29125_reset(hi2c);
+    ret |= ISL29125_Reset(hi2c);
 
     // Set to RGB mode, 10k lux, and high IR compensation
-    ret |= ISL29125_config(hi2c, CFG1_MODE_R | CFG1_375LUX, CFG2_IR_ADJUST_HIGH, CFG_DEFAULT);
+    ret |= ISL29125_Config(hi2c, CFG1_MODE_R | CFG1_375LUX, CFG2_IR_ADJUST_HIGH, CFG_DEFAULT);
 
     return ret;
 }
 
 // Reset all registers - returns 0 if successful
-uint8_t ISL29125_reset(I2C_HandleTypeDef *hi2c)
+uint8_t ISL29125_Reset(I2C_HandleTypeDef *hi2c)
 {
   uint8_t data = 0x00;
   // Reset registers
-  I2C_write8(hi2c, DEVICE_ID, 0x46);
+  I2C_Write8(hi2c, DEVICE_ID, 0x46);
   // Check reset
-  data = I2C_read8(hi2c, CONFIG_1);
-  data |= I2C_read8(hi2c, CONFIG_2);
-  data |= I2C_read8(hi2c, CONFIG_3);
-  data |= I2C_read8(hi2c, STATUS);
+  data = I2C_Read8(hi2c, CONFIG_1);
+  data |= I2C_Read8(hi2c, CONFIG_2);
+  data |= I2C_Read8(hi2c, CONFIG_3);
+  data |= I2C_Read8(hi2c, STATUS);
   if (data != 0x00)
   {
     return 1;
@@ -72,30 +72,30 @@ uint8_t ISL29125_reset(I2C_HandleTypeDef *hi2c)
 // Setup Configuration registers (three registers) - returns 0 if successful
 // Use CONFIG1 variables from SFE_ISL29125.h for first parameter config1, CONFIG2 for config2, 3 for 3
 // Use CFG_DEFAULT for default configuration for that register
-uint8_t ISL29125_config(I2C_HandleTypeDef *hi2c, uint8_t config1, uint8_t config2, uint8_t config3)
+uint8_t ISL29125_Config(I2C_HandleTypeDef *hi2c, uint8_t config1, uint8_t config2, uint8_t config3)
 {
   uint8_t ret = 0;
   uint8_t data = 0x00;
 
   // Set 1st configuration register
-  I2C_write8(hi2c, CONFIG_1, config1);
+  I2C_Write8(hi2c, CONFIG_1, config1);
   // Set 2nd configuration register
-  I2C_write8(hi2c, CONFIG_2, config2);
+  I2C_Write8(hi2c, CONFIG_2, config2);
   // Set 3rd configuration register
-  I2C_write8(hi2c, CONFIG_3, config3);
+  I2C_Write8(hi2c, CONFIG_3, config3);
 
   // Check if configurations were set correctly
-  data = I2C_read8(hi2c, CONFIG_1);
+  data = I2C_Read8(hi2c, CONFIG_1);
   if (data != config1)
   {
     ret |= 1;
   }
-  data = I2C_read8(hi2c, CONFIG_2);
+  data = I2C_Read8(hi2c, CONFIG_2);
   if (data != config2)
   {
     ret |= 1;
   }
-  data = I2C_read8(hi2c, CONFIG_3);
+  data = I2C_Read8(hi2c, CONFIG_3);
   if (data != config3)
   {
     ret |= 1;
@@ -104,55 +104,55 @@ uint8_t ISL29125_config(I2C_HandleTypeDef *hi2c, uint8_t config1, uint8_t config
 }
 
 // Sets upper threshold value for triggering interrupts
-void ISL29125_setUpperThreshold(I2C_HandleTypeDef *hi2c, uint16_t data)
+void ISL29125_SetUpperThreshold(I2C_HandleTypeDef *hi2c, uint16_t data)
 {
-  I2C_write16(hi2c, THRESHOLD_HL, data);
+  I2C_Write16(hi2c, THRESHOLD_HL, data);
 }
 
 // Sets lower threshold value for triggering interrupts
-void ISL29125_setLowerThreshold(I2C_HandleTypeDef *hi2c, uint16_t data)
+void ISL29125_SetLowerThreshold(I2C_HandleTypeDef *hi2c, uint16_t data)
 {
-  I2C_write16(hi2c, THRESHOLD_LL, data);
+  I2C_Write16(hi2c, THRESHOLD_LL, data);
 }
 
 // Check what the upper threshold is, 0xFFFF by default
-uint16_t ISL29125_readUpperThreshold(I2C_HandleTypeDef *hi2c)
+uint16_t ISL29125_ReadUpperThreshold(I2C_HandleTypeDef *hi2c)
 {
-  return I2C_read16(hi2c, THRESHOLD_HL);
+  return I2C_Read16(hi2c, THRESHOLD_HL);
 }
 
 // Check what the upper threshold is, 0x0000 by default
-uint16_t ISL29125_readLowerThreshold(I2C_HandleTypeDef *hi2c)
+uint16_t ISL29125_ReadLowerThreshold(I2C_HandleTypeDef *hi2c)
 {
-  return I2C_read16(hi2c, THRESHOLD_LL);
+  return I2C_Read16(hi2c, THRESHOLD_LL);
 }
 
 // Read the latest Sensor ADC reading for the color Red
-uint16_t ISL29125_readRed(I2C_HandleTypeDef *hi2c)
+uint16_t ISL29125_ReadRed(I2C_HandleTypeDef *hi2c)
 {
-  return I2C_read16(hi2c, RED_L);
+  return I2C_Read16(hi2c, RED_L);
 }
 
 // Read the latest Sensor ADC reading for the color Green
-uint16_t ISL29125_readGreen(I2C_HandleTypeDef *hi2c)
+uint16_t ISL29125_ReadGreen(I2C_HandleTypeDef *hi2c)
 {
-  return I2C_read16(hi2c, GREEN_L);
+  return I2C_Read16(hi2c, GREEN_L);
 }
 
 // Read the latest Sensor ADC reading for the color Blue
-uint16_t ISL29125_readBlue(I2C_HandleTypeDef *hi2c)
+uint16_t ISL29125_ReadBlue(I2C_HandleTypeDef *hi2c)
 {
-  return I2C_read16(hi2c, BLUE_L);
+  return I2C_Read16(hi2c, BLUE_L);
 }
 
 // Check status flag register that allows for checking for interrupts, brownouts, and ADC conversion completions
-uint8_t ISL29125_readStatus(I2C_HandleTypeDef *hi2c)
+uint8_t ISL29125_ReadStatus(I2C_HandleTypeDef *hi2c)
 {
-  return I2C_read8(hi2c, STATUS);
+  return I2C_Read8(hi2c, STATUS);
 }
 
 // Generic I2C read register (single byte)
-uint8_t I2C_read8(I2C_HandleTypeDef *hi2c, uint8_t reg)
+uint8_t I2C_Read8(I2C_HandleTypeDef *hi2c, uint8_t reg)
 {
   HAL_StatusTypeDef ret;
   uint8_t buf[12];
@@ -173,7 +173,7 @@ uint8_t I2C_read8(I2C_HandleTypeDef *hi2c, uint8_t reg)
 }
 
 // Generic I2C write data to register (single byte)
-uint8_t I2C_write8(I2C_HandleTypeDef *hi2c, uint8_t reg, uint8_t data)
+uint8_t I2C_Write8(I2C_HandleTypeDef *hi2c, uint8_t reg, uint8_t data)
 {
   HAL_StatusTypeDef ret;
   uint8_t buf[12];
@@ -189,7 +189,7 @@ uint8_t I2C_write8(I2C_HandleTypeDef *hi2c, uint8_t reg, uint8_t data)
   return 0;
 }
 
-uint16_t I2C_read16(I2C_HandleTypeDef *hi2c, uint8_t reg)
+uint16_t I2C_Read16(I2C_HandleTypeDef *hi2c, uint8_t reg)
 {
   HAL_StatusTypeDef ret;
   uint8_t buf[12];
@@ -213,7 +213,7 @@ uint16_t I2C_read16(I2C_HandleTypeDef *hi2c, uint8_t reg)
   return val;
 }
 
-uint16_t I2C_write16(I2C_HandleTypeDef *hi2c, uint8_t reg, uint16_t data)
+uint16_t I2C_Write16(I2C_HandleTypeDef *hi2c, uint8_t reg, uint16_t data)
 {
   HAL_StatusTypeDef ret;
   uint8_t buf[12];
