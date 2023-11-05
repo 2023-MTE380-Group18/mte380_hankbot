@@ -1,6 +1,9 @@
 # Created by https://www.toptal.com/developers/gitignore/api/eclipse,c++,c
 # Edit at https://www.toptal.com/developers/gitignore?templates=eclipse,c++,c
 
+### STM32CUBEIDE ###
+Debug/
+
 ### C ###
 # Prerequisites
 *.d
