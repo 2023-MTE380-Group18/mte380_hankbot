@@ -94,10 +94,11 @@ int main(void)
   MX_GPIO_Init();
   MX_USART2_UART_Init();
   MX_I2C3_Init();
-  MX_TIM1_Init();
-  MX_TIM2_Init();
   MX_TIM3_Init();
   MX_I2C1_Init();
+  MX_TIM1_Init();
+  MX_TIM2_Init();
+  MX_TIM5_Init();
   /* USER CODE BEGIN 2 */
   ISL29125_Init(&hi2c1);
   ISL29125_Init(&hi2c3);
@@ -115,34 +116,11 @@ int main(void)
   /* USER CODE BEGIN WHILE */
   while (1)
   {
-      //MANDALORIAN DEATH SEQUENCE
-      // Use functions from servo.h for better readability later
-      htim3.Instance->CCR3 = 145+70; // Claw Wrist Up
-      htim3.Instance->CCR4 = 40; // Gripper Open
-      HAL_Delay(5000);
-      htim3.Instance->CCR3 = 145; // Claw Wrist Down
+      Servo_Wrist_Up(&htim3);
+      Servo_Claw_Open(&htim3);
       HAL_Delay(1000);
-      htim3.Instance->CCR4 = 120; // Gripper Close
+      Servo_Claw_Close(&htim3);
       HAL_Delay(1000);
-      htim3.Instance->CCR3 = 145+70; // Claw Wrist Up
-      HAL_Delay(1000);
-      htim3.Instance->CCR3 = 145; // Claw Wrist Down
-      HAL_Delay(1000);
-      htim3.Instance->CCR3 = 145+70; // Claw Wrist Up
-      HAL_Delay(1000);
-      htim3.Instance->CCR3 = 145; // Claw Wrist Down
-      HAL_Delay(1000);
-      htim3.Instance->CCR3 = 145+70; // Claw Wrist Up
-      HAL_Delay(1000);
-      htim3.Instance->CCR3 = 145; // Claw Wrist Down
-      HAL_Delay(1000);
-      htim3.Instance->CCR3 = 145+70; // Claw Wrist Up
-      HAL_Delay(1000);
-      htim3.Instance->CCR3 = 145; // Claw Wrist Down
-      HAL_Delay(1000);
-      htim3.Instance->CCR3 = 145+70; // Claw Wrist Up
-      HAL_Delay(1000);
-      htim3.Instance->CCR3 = 145; // Claw Wrist Down
 
       color_data[0] = ISL29125_ReadRed(&hi2c1);
       color_data[1] = ISL29125_ReadBlue(&hi2c1);
