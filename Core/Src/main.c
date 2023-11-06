@@ -110,6 +110,47 @@ int main(void)
   ISL29125_Init(&hi2c3);
   ISL29125_Config(&hi2c1, CFG1_MODE_RGB | CFG1_10KLUX, CFG2_IR_ADJUST_HIGH, CFG3_NO_INT);
   ISL29125_Config(&hi2c3, CFG1_MODE_RGB | CFG1_10KLUX, CFG2_IR_ADJUST_HIGH, CFG3_NO_INT);
+
+  //Motors & LED Example
+  HAL_Delay(5000);
+  HAL_GPIO_TogglePin(GPIOB, GPIO_PIN_14); // Green LED
+  HAL_GPIO_TogglePin(GPIOB, GPIO_PIN_13); // Blue LED
+  HAL_GPIO_TogglePin(GPIOC, GPIO_PIN_6); // Red LED
+  HAL_GPIO_TogglePin(GPIOC, GPIO_PIN_7); // Yellow LED
+  L298N_Motor_R_Control(&htim1, 0, 50);
+  L298N_Motor_L_Control(&htim1, 0, 50);
+  HAL_Delay(1000);
+  HAL_GPIO_TogglePin(GPIOC, GPIO_PIN_7); // Yellow LED
+  L298N_Motor_R_Control(&htim1, 1, 50);
+  L298N_Motor_L_Control(&htim1, 1, 50);
+  HAL_Delay(1000);
+  HAL_GPIO_TogglePin(GPIOC, GPIO_PIN_7); // Yellow LED
+  HAL_GPIO_TogglePin(GPIOC, GPIO_PIN_6); // Red LED
+  L298N_Motor_R_Control(&htim1, 0, 100);
+  L298N_Motor_L_Control(&htim1, 0, 100);
+  HAL_Delay(1000);
+  HAL_GPIO_TogglePin(GPIOC, GPIO_PIN_7); // Yellow LED
+  L298N_Motor_R_Control(&htim1, 1, 100);
+  L298N_Motor_L_Control(&htim1, 1, 100);
+  HAL_Delay(1000);
+  HAL_GPIO_TogglePin(GPIOC, GPIO_PIN_7); // Yellow LED
+  HAL_GPIO_TogglePin(GPIOB, GPIO_PIN_14); // Green LED
+  L298N_Motor_R_Control(&htim1, 0, 300);
+  L298N_Motor_L_Control(&htim1, 0, 300);
+  HAL_Delay(1000);
+  HAL_GPIO_TogglePin(GPIOC, GPIO_PIN_7); // Yellow LED
+  L298N_Motor_R_Control(&htim1, 1, 300);
+  L298N_Motor_L_Control(&htim1, 1, 300);
+  HAL_Delay(1000);
+  HAL_GPIO_TogglePin(GPIOC, GPIO_PIN_7); // Yellow LED
+  HAL_GPIO_TogglePin(GPIOB, GPIO_PIN_13); // Blue LED
+  L298N_Motor_R_Control(&htim1, 1, 150);
+  L298N_Motor_L_Control(&htim1, 0, 150);
+  HAL_Delay(1000);
+  L298N_Motor_R_Control(&htim1, 0, 150);
+  L298N_Motor_L_Control(&htim1, 1, 150);
+  HAL_Delay(1000);
+  L298N_Motors_Stop(&htim1);
   /* USER CODE END 2 */
 
   /* Infinite loop */
@@ -117,63 +158,45 @@ int main(void)
   while (1)
   {
     // Encoder Example
-//    uint8_t MSG[50] = {'\0'};
-//    sprintf(MSG, "TIM2 Ticks = %d, TIM5 Ticks = %d\n\r", Encoder_Get_Ticks(&htim2), Encoder_Get_Ticks(&htim5));
-//    HAL_UART_Transmit(&huart2, MSG, strlen(MSG), HAL_MAX_DELAY); // Print to UART Terminal
-//    HAL_Delay(100);
+    uint8_t MSG[50] = {'\0'};
+    uint32_t encoder_tick_r = Encoder_Get_Ticks(&htim2);
+    uint32_t encoder_tick_l = Encoder_Get_Ticks(&htim5);
 
-    //Motors & LED Example
-//    HAL_GPIO_TogglePin(GPIOB, GPIO_PIN_14); // Green LED
-//    HAL_GPIO_TogglePin(GPIOB, GPIO_PIN_13); // Blue LED
-//    HAL_GPIO_TogglePin(GPIOC, GPIO_PIN_6); // Red LED
-//    HAL_GPIO_TogglePin(GPIOC, GPIO_PIN_7); // Yellow LED
-//    L298N_Motor_R_Control(&htim1, 0, 300);
-//    L298N_Motor_L_Control(&htim1, 0, 300);
-//    HAL_Delay(3000);
-//    HAL_GPIO_TogglePin(GPIOB, GPIO_PIN_14); // Green LED
-//    L298N_Motor_R_Control(&htim1, 0, 200);
-//    L298N_Motor_L_Control(&htim1, 0, 200);
-//    HAL_Delay(3000);
-//    HAL_GPIO_TogglePin(GPIOB, GPIO_PIN_13); // Blue LED
-//    L298N_Motor_R_Control(&htim1, 0, 100);
-//    L298N_Motor_L_Control(&htim1, 0, 100);
-//    HAL_Delay(3000);
-//    HAL_GPIO_TogglePin(GPIOC, GPIO_PIN_6); // Red LED
-//    L298N_Motors_Stop(&htim1);
-//    HAL_Delay(3000);
-//    HAL_GPIO_TogglePin(GPIOC, GPIO_PIN_7); // Yellow LED
-//    HAL_GPIO_TogglePin(GPIOC, GPIO_PIN_6); // Red LED
-//    HAL_GPIO_TogglePin(GPIOB, GPIO_PIN_13); // Blue LED
-//    HAL_GPIO_TogglePin(GPIOB, GPIO_PIN_14); // Green LED
-//    L298N_Motor_R_Control(&htim1, 1, 300);
-//    L298N_Motor_L_Control(&htim1, 1, 300);
-//    HAL_Delay(3000);
-//    HAL_GPIO_TogglePin(GPIOB, GPIO_PIN_14); // Green LED
-//    L298N_Motor_R_Control(&htim1, 1, 200);
-//    L298N_Motor_L_Control(&htim1, 1, 200);
-//    HAL_Delay(3000);
-//    HAL_GPIO_TogglePin(GPIOB, GPIO_PIN_13); // Blue LED
-//    L298N_Motor_R_Control(&htim1, 1, 100);
-//    L298N_Motor_L_Control(&htim1, 1, 100);
-//    HAL_Delay(3000);
-//    HAL_GPIO_TogglePin(GPIOC, GPIO_PIN_6); // Red LED
-//    L298N_Motors_Stop(&htim1);
-//    HAL_Delay(3000);
-//    L298N_Motor_R_Control(&htim1, 0, 300);
-//    L298N_Motor_L_Control(&htim1, 0, 100);
-//    HAL_Delay(3000);
-//    L298N_Motor_R_Control(&htim1, 0, 100);
-//    L298N_Motor_L_Control(&htim1, 0, 300);
-//    HAL_Delay(3000);
+    if (encoder_tick_r % 1000 > 500) {
+      HAL_GPIO_WritePin(GPIOC, GPIO_PIN_7, GPIO_PIN_RESET); // Yellow LED
+    } else {
+      HAL_GPIO_WritePin(GPIOC, GPIO_PIN_7, GPIO_PIN_SET); // Yellow LED
+    }
+
+    sprintf(MSG, "TIM2 Ticks = %d, TIM5 Ticks = %d  |  ", Encoder_Get_Ticks(&htim2), Encoder_Get_Ticks(&htim5));
+
+    HAL_UART_Transmit(&huart2, MSG, strlen(MSG), HAL_MAX_DELAY); // Print to UART Terminal
+    HAL_Delay(100);
 
     // Color Sensor Example
-//    uint16_t color_data[12];
-//    color_data[0] = ISL29125_ReadRed(&hi2c1);
-//    color_data[1] = ISL29125_ReadBlue(&hi2c1);
-//    color_data[2] = ISL29125_ReadGreen(&hi2c1);
-//    char buf[64];
-//    sprintf(buf, "Red: %d, Blue: %d, Green: %d\r\n", color_data[0], color_data[1], color_data[2]);
-//    HAL_UART_Transmit(&huart2, buf, strlen(buf), HAL_MAX_DELAY);
+    uint16_t color_data_L[12];
+    uint16_t color_data_R[12];
+    color_data_L[0] = ISL29125_ReadRed(&hi2c1);
+    color_data_L[1] = ISL29125_ReadBlue(&hi2c1);
+    color_data_L[2] = ISL29125_ReadGreen(&hi2c1);
+    color_data_R[0] = ISL29125_ReadRed(&hi2c3);
+    color_data_R[1] = ISL29125_ReadBlue(&hi2c3);
+    color_data_R[2] = ISL29125_ReadGreen(&hi2c3);
+
+    // Red: 672-720, Blue: 160-176, Green: 416-432
+    if (500 < color_data_L[0] && color_data_L[0] < 800
+     && 100 < color_data_L[1] && color_data_L[1] < 300
+     && 220 < color_data_L[2] && color_data_L[2] < 520)
+    {
+       Servo_Claw_Close(&htim3);
+       HAL_Delay(200);
+       Servo_Claw_Open(&htim3);
+       HAL_Delay(200);
+    }
+
+    char buf[64];
+    sprintf(buf, "Red: %d, Blue: %d, Green: %d\r\n", color_data_L[0], color_data_L[1], color_data_L[2]);
+    HAL_UART_Transmit(&huart2, buf, strlen(buf), HAL_MAX_DELAY);
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
