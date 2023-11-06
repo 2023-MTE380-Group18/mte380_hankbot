@@ -10,7 +10,7 @@
 
 #include "main.h"
 
-void Servo_Init(TIM_HandleTypeDef *htim, uint32_t Channel);
+void Servo_Init(TIM_HandleTypeDef *htim);
 void Servo_Claw_Open(TIM_HandleTypeDef *htim);
 void Servo_Claw_Close(TIM_HandleTypeDef *htim);
 void Servo_Wrist_Up(TIM_HandleTypeDef *htim);

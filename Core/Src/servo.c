@@ -7,9 +7,13 @@
 
 #include "servo.h"
 
-void Servo_Init(TIM_HandleTypeDef *htim, uint32_t Channel)
+void Servo_Init(TIM_HandleTypeDef *htim)
 {
-  HAL_TIM_PWM_Start(htim, Channel);
+  HAL_TIM_Base_Start(htim);
+  HAL_TIM_PWM_Start(htim, TIM_CHANNEL_3); //Wrist Servo [TIM3 CH3]
+  HAL_TIM_PWM_Start(htim, TIM_CHANNEL_4); //Gripper Servo [TIM3 CH4]
+  Servo_Wrist_Up(htim);
+  Servo_Claw_Open(htim);
 }
 
 void Servo_Claw_Open(TIM_HandleTypeDef *htim)

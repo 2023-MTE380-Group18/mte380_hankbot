@@ -10,13 +10,12 @@
 
 #include "main.h"
 
-static const uint8_t MAX_RPM = 300;
+static const double MAX_RPM = 300.0f;
 
-static uint8_t direction_L = 0;
-static uint8_t direction_R = 0;
+void L298N_Init(TIM_HandleTypeDef *htim);
 
-void L298N_Motor_L_Control(TIM_HandleTypeDef *htim, uint8_t direction, uint16_t speed);
 void L298N_Motor_R_Control(TIM_HandleTypeDef *htim, uint8_t direction, uint16_t speed);
+void L298N_Motor_L_Control(TIM_HandleTypeDef *htim, uint8_t direction, uint16_t speed);
 
 void L298N_Motors_Stop(TIM_HandleTypeDef *htim);
 

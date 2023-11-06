@@ -27,6 +27,7 @@
 /* USER CODE BEGIN Includes */
 #include "sparkfun_isl29125.h"
 #include "servo.h"
+#include "l298n_motor_control.h"
 
 #include <stdio.h>
 #include <string.h>
@@ -100,36 +101,71 @@ int main(void)
   MX_TIM2_Init();
   MX_TIM5_Init();
   /* USER CODE BEGIN 2 */
+  L298N_Init(&htim1);
+  Servo_Init(&htim3);
+
   ISL29125_Init(&hi2c1);
   ISL29125_Init(&hi2c3);
   ISL29125_Config(&hi2c1, CFG1_MODE_RGB | CFG1_10KLUX, CFG2_IR_ADJUST_HIGH, CFG3_NO_INT);
   ISL29125_Config(&hi2c3, CFG1_MODE_RGB | CFG1_10KLUX, CFG2_IR_ADJUST_HIGH, CFG3_NO_INT);
 
-  HAL_TIM_Base_Start(&htim3);
-  Servo_Init(&htim3, TIM_CHANNEL_3); //Wrist Servo [TIM3 CH3]
-  Servo_Init(&htim3, TIM_CHANNEL_4); //Gripper Servo [TIM3 CH4]
-
-  HAL_GPIO_TogglePin(GPIOA, GPIO_PIN_5);
   /* USER CODE END 2 */
 
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
   while (1)
   {
-      Servo_Wrist_Up(&htim3);
-      Servo_Claw_Open(&htim3);
-      HAL_Delay(1000);
-      Servo_Claw_Close(&htim3);
-      HAL_Delay(1000);
+    HAL_GPIO_TogglePin(GPIOB, GPIO_PIN_14); // Green LED
+    HAL_GPIO_TogglePin(GPIOB, GPIO_PIN_13); // Blue LED
+    HAL_GPIO_TogglePin(GPIOC, GPIO_PIN_6); // Red LED
+    HAL_GPIO_TogglePin(GPIOC, GPIO_PIN_7); // Yellow LED
+    L298N_Motor_R_Control(&htim1, 0, 300);
+    L298N_Motor_L_Control(&htim1, 0, 300);
+    HAL_Delay(3000);
+    HAL_GPIO_TogglePin(GPIOB, GPIO_PIN_14); // Green LED
+    L298N_Motor_R_Control(&htim1, 0, 200);
+    L298N_Motor_L_Control(&htim1, 0, 200);
+    HAL_Delay(3000);
+    HAL_GPIO_TogglePin(GPIOB, GPIO_PIN_13); // Blue LED
+    L298N_Motor_R_Control(&htim1, 0, 100);
+    L298N_Motor_L_Control(&htim1, 0, 100);
+    HAL_Delay(3000);
+    HAL_GPIO_TogglePin(GPIOC, GPIO_PIN_6); // Red LED
+    L298N_Motors_Stop(&htim1);
+    HAL_Delay(3000);
+    HAL_GPIO_TogglePin(GPIOC, GPIO_PIN_7); // Yellow LED
+    HAL_GPIO_TogglePin(GPIOC, GPIO_PIN_6); // Red LED
+    HAL_GPIO_TogglePin(GPIOB, GPIO_PIN_13); // Blue LED
+    HAL_GPIO_TogglePin(GPIOB, GPIO_PIN_14); // Green LED
+    L298N_Motor_R_Control(&htim1, 1, 300);
+    L298N_Motor_L_Control(&htim1, 1, 300);
+    HAL_Delay(3000);
+    HAL_GPIO_TogglePin(GPIOB, GPIO_PIN_14); // Green LED
+    L298N_Motor_R_Control(&htim1, 1, 200);
+    L298N_Motor_L_Control(&htim1, 1, 200);
+    HAL_Delay(3000);
+    HAL_GPIO_TogglePin(GPIOB, GPIO_PIN_13); // Blue LED
+    L298N_Motor_R_Control(&htim1, 1, 100);
+    L298N_Motor_L_Control(&htim1, 1, 100);
+    HAL_Delay(3000);
+    HAL_GPIO_TogglePin(GPIOC, GPIO_PIN_6); // Red LED
+    L298N_Motors_Stop(&htim1);
+    HAL_Delay(3000);
+    L298N_Motor_R_Control(&htim1, 0, 300);
+    L298N_Motor_L_Control(&htim1, 0, 100);
+    HAL_Delay(3000);
+    L298N_Motor_R_Control(&htim1, 0, 100);
+    L298N_Motor_L_Control(&htim1, 0, 300);
+    HAL_Delay(3000);
 
-      color_data[0] = ISL29125_ReadRed(&hi2c1);
-      color_data[1] = ISL29125_ReadBlue(&hi2c1);
-      color_data[2] = ISL29125_ReadGreen(&hi2c1);
-
-      // Send out buffer
-      char buf[64];
-      sprintf(buf, "Red: %d, Blue: %d, Green: %d\r\n", color_data[0], color_data[1], color_data[2]);
-      HAL_UART_Transmit(&huart2, buf, strlen(buf), HAL_MAX_DELAY);
+//      color_data[0] = ISL29125_ReadRed(&hi2c1);
+//      color_data[1] = ISL29125_ReadBlue(&hi2c1);
+//      color_data[2] = ISL29125_ReadGreen(&hi2c1);
+//
+//       Send out buffer
+//      char buf[64];
+//      sprintf(buf, "Red: %d, Blue: %d, Green: %d\r\n", color_data[0], color_data[1], color_data[2]);
+//      HAL_UART_Transmit(&huart2, buf, strlen(buf), HAL_MAX_DELAY);
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */

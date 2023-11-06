@@ -73,24 +73,24 @@ void Error_Handler(void);
 #define TIM3_CH3_SVO_WRIST_GPIO_Port GPIOB
 #define TIM3_CH4_SVO_GRAB_Pin GPIO_PIN_1
 #define TIM3_CH4_SVO_GRAB_GPIO_Port GPIOB
-#define TIM1_CH3_MTR_L_Pin GPIO_PIN_10
-#define TIM1_CH3_MTR_L_GPIO_Port GPIOA
-#define TIM1_CH4_MTR_R_Pin GPIO_PIN_11
-#define TIM1_CH4_MTR_R_GPIO_Port GPIOA
+#define TIM1_CH3_MTR_R_Pin GPIO_PIN_10
+#define TIM1_CH3_MTR_R_GPIO_Port GPIOA
+#define TIM1_CH4_MTR_L_Pin GPIO_PIN_11
+#define TIM1_CH4_MTR_L_GPIO_Port GPIOA
 #define TMS_Pin GPIO_PIN_13
 #define TMS_GPIO_Port GPIOA
 #define TCK_Pin GPIO_PIN_14
 #define TCK_GPIO_Port GPIOA
 #define TIM2_CH2_ENC_R_B_Pin GPIO_PIN_3
 #define TIM2_CH2_ENC_R_B_GPIO_Port GPIOB
-#define MTR_R_BACK_Pin GPIO_PIN_4
+#define MTR_L_FWD_Pin GPIO_PIN_4
+#define MTR_L_FWD_GPIO_Port GPIOB
+#define MTR_L_BACK_Pin GPIO_PIN_5
+#define MTR_L_BACK_GPIO_Port GPIOB
+#define MTR_R_FWD_Pin GPIO_PIN_6
+#define MTR_R_FWD_GPIO_Port GPIOB
+#define MTR_R_BACK_Pin GPIO_PIN_7
 #define MTR_R_BACK_GPIO_Port GPIOB
-#define MTR_RIGHT_FWD_Pin GPIO_PIN_5
-#define MTR_RIGHT_FWD_GPIO_Port GPIOB
-#define MTR_LEFT_BACK_Pin GPIO_PIN_6
-#define MTR_LEFT_BACK_GPIO_Port GPIOB
-#define MTR_LEFT_FWD_Pin GPIO_PIN_7
-#define MTR_LEFT_FWD_GPIO_Port GPIOB
 
 /* USER CODE BEGIN Private defines */
 

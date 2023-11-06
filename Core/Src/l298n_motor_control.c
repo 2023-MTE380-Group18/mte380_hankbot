@@ -7,54 +7,73 @@
 
 #include "l298n_motor_control.h"
 
-// htim = &htim3  [CH3 for Left Motor]
-// direction = 1 => Forward Direction
-// direction = 0 => Backwards Direction
-void L298N_Motor_L_Control(TIM_HandleTypeDef *htim, uint8_t direction, uint16_t speed)
+static uint8_t direction_L = 0;
+static uint8_t direction_R = 0;
+
+void L298N_Init(TIM_HandleTypeDef *htim)
 {
-  // If the direction is being changed
-  if (direction != direction_L) {
-    direction_L = direction;
-    if (direction == 0) {
-      // Left Motor Backwards Direction
-      HAL_GPIO_WritePin(GPIOB, GPIO_PIN_6, GPIO_PIN_RESET);
-      HAL_GPIO_WritePin(GPIOB, GPIO_PIN_7, GPIO_PIN_RESET);
-      HAL_Delay(10);     // Avoid closing all H-Bridge Switches simutaniously.
-      HAL_GPIO_WritePin(GPIOB, GPIO_PIN_6, GPIO_PIN_SET);
-    } else {
-      // Left Motor Forward Direction
-      HAL_GPIO_WritePin(GPIOB, GPIO_PIN_6, GPIO_PIN_RESET);
-      HAL_GPIO_WritePin(GPIOB, GPIO_PIN_7, GPIO_PIN_RESET);
-      HAL_Delay(10);    // Avoid closing all H-Bridge Switches simutaniously.
-      HAL_GPIO_WritePin(GPIOB, GPIO_PIN_7, GPIO_PIN_SET);
-    }
-  }
-  htim->Instance->CCR3 = (uint16_t)((speed/MAX_RPM)*20000);
+  HAL_GPIO_WritePin(GPIOB, GPIO_PIN_4, GPIO_PIN_SET);
+  HAL_GPIO_WritePin(GPIOB, GPIO_PIN_5, GPIO_PIN_RESET);
+  HAL_GPIO_WritePin(GPIOB, GPIO_PIN_6, GPIO_PIN_SET);
+  HAL_GPIO_WritePin(GPIOB, GPIO_PIN_7, GPIO_PIN_RESET);
+  HAL_TIM_Base_Start(htim);
+  HAL_TIM_PWM_Start(htim, TIM_CHANNEL_3);
+  HAL_TIM_PWM_Start(htim, TIM_CHANNEL_4);
+  L298N_Motors_Stop(htim);
 }
 
-// htim = &htim3  [CH4 for Left Motor]
-// direction = 1 => Forward Direction
-// direction = 0 => Backwards Direction
+// htim = &htim3  [CH3 for Left Motor]
+// direction = 0 => Forwards Direction
+// direction = 1 => Backwards Direction
+// speed => in RPM. Maximum allowed value is MAX_RPM=300
 void L298N_Motor_R_Control(TIM_HandleTypeDef *htim, uint8_t direction, uint16_t speed)
 {
   // If the direction is being changed
   if (direction != direction_R) {
     direction_R = direction;
+    // Avoid closing all H-Bridge Switches simutaniously
+    HAL_GPIO_WritePin(GPIOB, GPIO_PIN_6, GPIO_PIN_RESET);
+    HAL_GPIO_WritePin(GPIOB, GPIO_PIN_7, GPIO_PIN_RESET);
+    HAL_TIM_PWM_Stop(htim, TIM_CHANNEL_3);
+    HAL_Delay(20);
     if (direction == 0) {
-      // Right Motor Backwards Direction
-      HAL_GPIO_WritePin(GPIOB, GPIO_PIN_4, GPIO_PIN_RESET);
-      HAL_GPIO_WritePin(GPIOB, GPIO_PIN_5, GPIO_PIN_RESET);
-      HAL_Delay(10);     // Avoid closing all H-Bridge Switches simutaniously.
+      // Right Motor Forward Direction
+      HAL_GPIO_WritePin(GPIOB, GPIO_PIN_6, GPIO_PIN_SET);
+    } else {
+      // Right Motor Backward Direction
+      HAL_GPIO_WritePin(GPIOB, GPIO_PIN_7, GPIO_PIN_SET);
+    }
+    HAL_TIM_PWM_Start(htim, TIM_CHANNEL_3);
+  }
+//  __HAL_TIM_SET_COMPARE(htim, TIM_CHANNEL_3, (uint16_t)(speed/MAX_RPM)*20000);
+  htim->Instance->CCR3 = (uint16_t)(((double)speed/MAX_RPM)*20000);
+}
+
+// htim = &htim3  [CH4 for Left Motor]
+// direction = 0 => Forwards Direction
+// direction = 1 => Backwards Direction
+// speed => in RPM. Maximum allowed value is MAX_RPM=300
+void L298N_Motor_L_Control(TIM_HandleTypeDef *htim, uint8_t direction, uint16_t speed)
+{
+  // If the direction is being changed
+  if (direction != direction_L) {
+    direction_L = direction;
+    // Avoid closing all H-Bridge Switches simutaniously
+    HAL_GPIO_WritePin(GPIOB, GPIO_PIN_4, GPIO_PIN_RESET);
+    HAL_GPIO_WritePin(GPIOB, GPIO_PIN_5, GPIO_PIN_RESET);
+    HAL_TIM_PWM_Stop(htim, TIM_CHANNEL_4);
+    HAL_Delay(20);
+    if (direction == 0) {
+      // Left Motor Forward Direction
       HAL_GPIO_WritePin(GPIOB, GPIO_PIN_4, GPIO_PIN_SET);
     } else {
-      // Right Motor Forward Direction
-      HAL_GPIO_WritePin(GPIOB, GPIO_PIN_4, GPIO_PIN_RESET);
-      HAL_GPIO_WritePin(GPIOB, GPIO_PIN_5, GPIO_PIN_RESET);
-      HAL_Delay(10);    // Avoid closing all H-Bridge Switches simutaniously.
+      // Left Motor Backwards Direction
       HAL_GPIO_WritePin(GPIOB, GPIO_PIN_5, GPIO_PIN_SET);
     }
+    HAL_TIM_PWM_Start(htim, TIM_CHANNEL_4);
   }
-  htim->Instance->CCR4 = (uint16_t)((speed/MAX_RPM)*20000);
+//  __HAL_TIM_SET_COMPARE(htim, TIM_CHANNEL_4, (uint16_t)(speed/MAX_RPM)*20000);
+  htim->Instance->CCR4 = (uint16_t)(((double)speed/MAX_RPM)*20000);
 }
 
 void L298N_Motors_Stop(TIM_HandleTypeDef *htim)
