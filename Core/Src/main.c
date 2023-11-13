@@ -188,7 +188,7 @@ int main(void)
     color_data_R[1] = ISL29125_ReadBlue(&hi2c3);
     color_data_R[2] = ISL29125_ReadGreen(&hi2c3);
 
-    // Red Tape Detection Data, 16Bit Data (Experiemental):
+    // LEFT SENSOR Red Tape Detection Data, 16Bit Data (Experiemental):
     // Red: 281-337, Blue: 174-248, Green: 205-280
 //    if (260 < color_data_L[0] && color_data_L[0] < 360
 //     && 140 < color_data_L[1] && color_data_L[1] < 280
@@ -199,11 +199,22 @@ int main(void)
 //      HAL_GPIO_WritePin(GPIOC, GPIO_PIN_6, GPIO_PIN_RESET); // Red LED
 //    }
 
-    // Red Tape Detection Data, 12Bit Data (Experiemental):
-    // Red: 20-22, Blue: 13-20, Green: 15-22
-    if (16 < color_data_L[0] && color_data_L[0] < 26
-     && 10 < color_data_L[1] && color_data_L[1] < 25
-     && 10 < color_data_L[2] && color_data_L[2] < 25)
+    // LEFT SENSOR Red Tape Detection Data, 12Bit Data (Experiemental):
+    // Red: 19-43, Blue: 13-70, Green: 15-76
+    if (18 < color_data_L[0] && color_data_L[0] < 46
+     && 12 < color_data_L[1] && color_data_L[1] < 73
+     && 14 < color_data_L[2] && color_data_L[2] < 79)
+    {
+      HAL_GPIO_WritePin(GPIOC, GPIO_PIN_7, GPIO_PIN_SET); // Yellow LED
+    } else {
+      HAL_GPIO_WritePin(GPIOC, GPIO_PIN_7, GPIO_PIN_RESET); // Yellow LED
+    }
+
+    // RIGHT SENSOR Red Tape Detection Data, 12Bit Data (Experiemental):
+    // Red: 33- ~55, Blue: 17-59, Green: 23-67
+    if (32 < color_data_R[0] && color_data_R[0] < 58
+     && 16 < color_data_R[1] && color_data_R[1] < 62
+     && 22 < color_data_R[2] && color_data_R[2] < 70)
     {
       HAL_GPIO_WritePin(GPIOC, GPIO_PIN_6, GPIO_PIN_SET); // Red LED
     } else {
@@ -211,10 +222,10 @@ int main(void)
     }
 
 
-//    char buf[64];
-//    sprintf(buf, "Left | Red: %d, Blue: %d, Green: %d | Right | Red: %d, Blue: %d, Green: %d |\r\n",
-//        color_data_L[0], color_data_L[1], color_data_L[2], color_data_R[0], color_data_R[1], color_data_R[2]);
-//    HAL_UART_Transmit(&huart2, buf, strlen(buf), HAL_MAX_DELAY);
+    char buf[64];
+    sprintf(buf, "Left | Red: %d, Blue: %d, Green: %d | Right | Red: %d, Blue: %d, Green: %d |\r\n",
+        color_data_L[0], color_data_L[1], color_data_L[2], color_data_R[0], color_data_R[1], color_data_R[2]);
+    HAL_UART_Transmit(&huart2, buf, strlen(buf), HAL_MAX_DELAY);
 
     /* USER CODE END WHILE */
 
@@ -270,6 +281,7 @@ void SystemClock_Config(void)
 }
 
 /* USER CODE BEGIN 4 */
+
 
 /* USER CODE END 4 */
 
