@@ -130,19 +130,32 @@ uint16_t ISL29125_ReadLowerThreshold(I2C_HandleTypeDef *hi2c)
 // Read the latest Sensor ADC reading for the color Red
 uint16_t ISL29125_ReadRed(I2C_HandleTypeDef *hi2c)
 {
-  return I2C_Read16(hi2c, RED_L);
+  uint8_t dataLo, dataHi;
+  dataLo = I2C_Read8(hi2c, RED_L);
+  dataHi = I2C_Read8(hi2c, RED_H);
+  // 16-bit unsigned result for Red Data of ISL29125
+  return (uint16_t)((dataHi << 8) | dataLo);
+
 }
 
 // Read the latest Sensor ADC reading for the color Green
 uint16_t ISL29125_ReadGreen(I2C_HandleTypeDef *hi2c)
 {
-  return I2C_Read16(hi2c, GREEN_L);
+  uint8_t dataLo, dataHi;
+  dataLo = I2C_Read8(hi2c, GREEN_L);
+  dataHi = I2C_Read8(hi2c, GREEN_H);
+  // 16-bit unsigned result for Green Data of ISL29125
+  return (uint16_t)((dataHi << 8) | dataLo);
 }
 
 // Read the latest Sensor ADC reading for the color Blue
 uint16_t ISL29125_ReadBlue(I2C_HandleTypeDef *hi2c)
 {
-  return I2C_Read16(hi2c, BLUE_L);
+    uint8_t dataLo, dataHi;
+    dataLo = I2C_Read8(hi2c, BLUE_L);
+    dataHi = I2C_Read8(hi2c, BLUE_H);
+    // 16-bit unsigned result for Green Data of ISL29125
+    return (uint16_t)((dataHi << 8) | dataLo);
 }
 
 // Check status flag register that allows for checking for interrupts, brownouts, and ADC conversion completions
@@ -155,21 +168,21 @@ uint8_t ISL29125_ReadStatus(I2C_HandleTypeDef *hi2c)
 uint8_t I2C_Read8(I2C_HandleTypeDef *hi2c, uint8_t reg)
 {
   HAL_StatusTypeDef ret;
-  uint8_t buf[12];
+  uint8_t val;
 
   // Tell I2C sensor that we want to read from register
-  buf[0] = reg;
-  ret = HAL_I2C_Master_Transmit(hi2c, ISL_I2C_8BIT_ADDR, buf, 1, HAL_MAX_DELAY);
+  val = reg;
+  ret = HAL_I2C_Master_Transmit(hi2c, ISL_I2C_8BIT_ADDR, (uint8_t *)&val, 1, HAL_MAX_DELAY);
   if ( ret != HAL_OK ) {
-    strcpy((char*)buf, "Error Tx\r\n");
+    val = 0x01;
   } else {
     // Read 1 byte from register
-    ret = HAL_I2C_Master_Receive(hi2c, ISL_I2C_8BIT_ADDR, buf, 1, HAL_MAX_DELAY);
+    ret = HAL_I2C_Master_Receive(hi2c, ISL_I2C_8BIT_ADDR, (uint8_t *)&val, 1, HAL_MAX_DELAY);
     if ( ret != HAL_OK ) {
-      strcpy((char*)buf, "Error Rx\r\n");
+      val = 0x01;
     }
   }
-  return buf[0];
+  return val;
 }
 
 // Generic I2C write data to register (single byte)

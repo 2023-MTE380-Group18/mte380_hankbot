@@ -73,6 +73,11 @@ void SystemClock_Config(void);
 int main(void)
 {
   /* USER CODE BEGIN 1 */
+  uint16_t color_data_L[3];
+  uint16_t color_data_R[3];
+
+  uint32_t encoder_tick_r;
+  uint32_t encoder_tick_l;
   /* USER CODE END 1 */
 
   /* MCU Configuration--------------------------------------------------------*/
@@ -108,74 +113,74 @@ int main(void)
 
   ISL29125_Init(&hi2c1);
   ISL29125_Init(&hi2c3);
-  ISL29125_Config(&hi2c1, CFG1_MODE_RGB | CFG1_10KLUX, CFG2_IR_ADJUST_HIGH, CFG3_NO_INT);
-  ISL29125_Config(&hi2c3, CFG1_MODE_RGB | CFG1_10KLUX, CFG2_IR_ADJUST_HIGH, CFG3_NO_INT);
+  ISL29125_Config(&hi2c1, CFG1_MODE_RGB | CFG1_10KLUX | CFG1_12BIT, CFG2_IR_ADJUST_HIGH, CFG3_NO_INT);
+  ISL29125_Config(&hi2c3, CFG1_MODE_RGB | CFG1_10KLUX | CFG1_12BIT, CFG2_IR_ADJUST_HIGH, CFG3_NO_INT);
 
   //Motors & LED Example
-  HAL_Delay(5000);
-  HAL_GPIO_TogglePin(GPIOB, GPIO_PIN_14); // Green LED
-  HAL_GPIO_TogglePin(GPIOB, GPIO_PIN_13); // Blue LED
-  HAL_GPIO_TogglePin(GPIOC, GPIO_PIN_6); // Red LED
-  HAL_GPIO_TogglePin(GPIOC, GPIO_PIN_7); // Yellow LED
-  L298N_Motor_R_Control(&htim1, 0, 50);
-  L298N_Motor_L_Control(&htim1, 0, 50);
-  HAL_Delay(1000);
-  HAL_GPIO_TogglePin(GPIOC, GPIO_PIN_7); // Yellow LED
-  L298N_Motor_R_Control(&htim1, 1, 50);
-  L298N_Motor_L_Control(&htim1, 1, 50);
-  HAL_Delay(1000);
-  HAL_GPIO_TogglePin(GPIOC, GPIO_PIN_7); // Yellow LED
-  HAL_GPIO_TogglePin(GPIOC, GPIO_PIN_6); // Red LED
-  L298N_Motor_R_Control(&htim1, 0, 100);
-  L298N_Motor_L_Control(&htim1, 0, 100);
-  HAL_Delay(1000);
-  HAL_GPIO_TogglePin(GPIOC, GPIO_PIN_7); // Yellow LED
-  L298N_Motor_R_Control(&htim1, 1, 100);
-  L298N_Motor_L_Control(&htim1, 1, 100);
-  HAL_Delay(1000);
-  HAL_GPIO_TogglePin(GPIOC, GPIO_PIN_7); // Yellow LED
-  HAL_GPIO_TogglePin(GPIOB, GPIO_PIN_14); // Green LED
-  L298N_Motor_R_Control(&htim1, 0, 300);
-  L298N_Motor_L_Control(&htim1, 0, 300);
-  HAL_Delay(1000);
-  HAL_GPIO_TogglePin(GPIOC, GPIO_PIN_7); // Yellow LED
-  L298N_Motor_R_Control(&htim1, 1, 300);
-  L298N_Motor_L_Control(&htim1, 1, 300);
-  HAL_Delay(1000);
-  HAL_GPIO_TogglePin(GPIOC, GPIO_PIN_7); // Yellow LED
-  HAL_GPIO_TogglePin(GPIOB, GPIO_PIN_13); // Blue LED
-  L298N_Motor_R_Control(&htim1, 1, 150);
-  L298N_Motor_L_Control(&htim1, 0, 150);
-  HAL_Delay(1000);
-  L298N_Motor_R_Control(&htim1, 0, 150);
-  L298N_Motor_L_Control(&htim1, 1, 150);
-  HAL_Delay(1000);
-  L298N_Motors_Stop(&htim1);
+//  HAL_Delay(5000);
+//  HAL_GPIO_TogglePin(GPIOB, GPIO_PIN_14); // Green LED
+//  HAL_GPIO_TogglePin(GPIOB, GPIO_PIN_13); // Blue LED
+//  HAL_GPIO_TogglePin(GPIOC, GPIO_PIN_6); // Red LED
+//  HAL_GPIO_TogglePin(GPIOC, GPIO_PIN_7); // Yellow LED
+//  L298N_Motor_R_Control(&htim1, 0, 50);
+//  L298N_Motor_L_Control(&htim1, 0, 50);
+//  HAL_Delay(1000);
+//  HAL_GPIO_TogglePin(GPIOC, GPIO_PIN_7); // Yellow LED
+//  L298N_Motor_R_Control(&htim1, 1, 50);
+//  L298N_Motor_L_Control(&htim1, 1, 50);
+//  HAL_Delay(1000);
+//  HAL_GPIO_TogglePin(GPIOC, GPIO_PIN_7); // Yellow LED
+//  HAL_GPIO_TogglePin(GPIOC, GPIO_PIN_6); // Red LED
+//  L298N_Motor_R_Control(&htim1, 0, 100);
+//  L298N_Motor_L_Control(&htim1, 0, 100);
+//  HAL_Delay(1000);
+//  HAL_GPIO_TogglePin(GPIOC, GPIO_PIN_7); // Yellow LED
+//  L298N_Motor_R_Control(&htim1, 1, 100);
+//  L298N_Motor_L_Control(&htim1, 1, 100);
+//  HAL_Delay(1000);
+//  HAL_GPIO_TogglePin(GPIOC, GPIO_PIN_7); // Yellow LED
+//  HAL_GPIO_TogglePin(GPIOB, GPIO_PIN_14); // Green LED
+//  L298N_Motor_R_Control(&htim1, 0, 300);
+//  L298N_Motor_L_Control(&htim1, 0, 300);
+//  HAL_Delay(1000);
+//  HAL_GPIO_TogglePin(GPIOC, GPIO_PIN_7); // Yellow LED
+//  L298N_Motor_R_Control(&htim1, 1, 300);
+//  L298N_Motor_L_Control(&htim1, 1, 300);
+//  HAL_Delay(1000);
+//  HAL_GPIO_TogglePin(GPIOC, GPIO_PIN_7); // Yellow LED
+//  HAL_GPIO_TogglePin(GPIOB, GPIO_PIN_13); // Blue LED
+//  L298N_Motor_R_Control(&htim1, 1, 150);
+//  L298N_Motor_L_Control(&htim1, 0, 150);
+//  HAL_Delay(1000);
+//  L298N_Motor_R_Control(&htim1, 0, 150);
+//  L298N_Motor_L_Control(&htim1, 1, 150);
+//  HAL_Delay(1000);
+//  L298N_Motors_Stop(&htim1);
   /* USER CODE END 2 */
 
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
   while (1)
   {
-    // Encoder Example
-    uint8_t MSG[50] = {'\0'};
-    uint32_t encoder_tick_r = Encoder_Get_Ticks(&htim2);
-    uint32_t encoder_tick_l = Encoder_Get_Ticks(&htim5);
-
+    // *** Encoder Example ***
+    // uint8_t MSG[50] = {'\0'};
+    encoder_tick_r = Encoder_Get_Ticks(&htim2);
+    encoder_tick_l = Encoder_Get_Ticks(&htim5);
     if (encoder_tick_r % 1000 > 500) {
-      HAL_GPIO_WritePin(GPIOC, GPIO_PIN_7, GPIO_PIN_RESET); // Yellow LED
+      HAL_GPIO_WritePin(GPIOB, GPIO_PIN_13, GPIO_PIN_RESET); // Blue LED
     } else {
-      HAL_GPIO_WritePin(GPIOC, GPIO_PIN_7, GPIO_PIN_SET); // Yellow LED
+      HAL_GPIO_WritePin(GPIOB, GPIO_PIN_13, GPIO_PIN_SET); // Blue LED
     }
 
-    sprintf(MSG, "TIM2 Ticks = %d, TIM5 Ticks = %d  |  ", Encoder_Get_Ticks(&htim2), Encoder_Get_Ticks(&htim5));
+    if (encoder_tick_l % 1000 > 500) {
+      HAL_GPIO_WritePin(GPIOB, GPIO_PIN_14, GPIO_PIN_RESET); // Green LED
+    } else {
+      HAL_GPIO_WritePin(GPIOB, GPIO_PIN_14, GPIO_PIN_SET); // Green LED
+    }
+//    sprintf(MSG, "TIM2 Ticks = %d, TIM5 Ticks = %d  |  ", Encoder_Get_Ticks(&htim2), Encoder_Get_Ticks(&htim5));
+//    HAL_UART_Transmit(&huart2, MSG, strlen(MSG), HAL_MAX_DELAY); // Print to UART Terminal
 
-    HAL_UART_Transmit(&huart2, MSG, strlen(MSG), HAL_MAX_DELAY); // Print to UART Terminal
-    HAL_Delay(100);
-
-    // Color Sensor Example
-    uint16_t color_data_L[12];
-    uint16_t color_data_R[12];
+    // *** Color Sensor Example ***
     color_data_L[0] = ISL29125_ReadRed(&hi2c1);
     color_data_L[1] = ISL29125_ReadBlue(&hi2c1);
     color_data_L[2] = ISL29125_ReadGreen(&hi2c1);
@@ -183,20 +188,34 @@ int main(void)
     color_data_R[1] = ISL29125_ReadBlue(&hi2c3);
     color_data_R[2] = ISL29125_ReadGreen(&hi2c3);
 
-    // Red: 672-720, Blue: 160-176, Green: 416-432
-    if (500 < color_data_L[0] && color_data_L[0] < 800
-     && 100 < color_data_L[1] && color_data_L[1] < 300
-     && 220 < color_data_L[2] && color_data_L[2] < 520)
+    // Red Tape Detection Data, 16Bit Data (Experiemental):
+    // Red: 281-337, Blue: 174-248, Green: 205-280
+//    if (260 < color_data_L[0] && color_data_L[0] < 360
+//     && 140 < color_data_L[1] && color_data_L[1] < 280
+//     && 180 < color_data_L[2] && color_data_L[2] < 300)
+//    {
+//      HAL_GPIO_WritePin(GPIOC, GPIO_PIN_6, GPIO_PIN_SET); // Red LED
+//    } else {
+//      HAL_GPIO_WritePin(GPIOC, GPIO_PIN_6, GPIO_PIN_RESET); // Red LED
+//    }
+
+    // Red Tape Detection Data, 12Bit Data (Experiemental):
+    // Red: 20-22, Blue: 13-20, Green: 15-22
+    if (16 < color_data_L[0] && color_data_L[0] < 26
+     && 10 < color_data_L[1] && color_data_L[1] < 25
+     && 10 < color_data_L[2] && color_data_L[2] < 25)
     {
-       Servo_Claw_Close(&htim3);
-       HAL_Delay(200);
-       Servo_Claw_Open(&htim3);
-       HAL_Delay(200);
+      HAL_GPIO_WritePin(GPIOC, GPIO_PIN_6, GPIO_PIN_SET); // Red LED
+    } else {
+      HAL_GPIO_WritePin(GPIOC, GPIO_PIN_6, GPIO_PIN_RESET); // Red LED
     }
 
-    char buf[64];
-    sprintf(buf, "Red: %d, Blue: %d, Green: %d\r\n", color_data_L[0], color_data_L[1], color_data_L[2]);
-    HAL_UART_Transmit(&huart2, buf, strlen(buf), HAL_MAX_DELAY);
+
+//    char buf[64];
+//    sprintf(buf, "Left | Red: %d, Blue: %d, Green: %d | Right | Red: %d, Blue: %d, Green: %d |\r\n",
+//        color_data_L[0], color_data_L[1], color_data_L[2], color_data_R[0], color_data_R[1], color_data_R[2]);
+//    HAL_UART_Transmit(&huart2, buf, strlen(buf), HAL_MAX_DELAY);
+
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */

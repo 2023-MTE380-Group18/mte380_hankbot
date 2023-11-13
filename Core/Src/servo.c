@@ -28,10 +28,16 @@ void Servo_Claw_Close(TIM_HandleTypeDef *htim)
 
 void Servo_Wrist_Up(TIM_HandleTypeDef *htim)
 {
-  htim->Instance->CCR3 = 145+70;
+  for(int i=0; i<=80; i=i+5) {
+    htim->Instance->CCR3 = 145+i;
+    HAL_Delay(50);
+  }
 }
 
 void Servo_Wrist_Down(TIM_HandleTypeDef *htim)
 {
-  htim->Instance->CCR3 = 145;
+  for(int i=0; i<=80; i=i+5) {
+    htim->Instance->CCR3 = 145+80-i;
+    HAL_Delay(50);
+  }
 }
