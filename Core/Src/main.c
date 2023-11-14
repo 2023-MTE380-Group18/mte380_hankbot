@@ -116,46 +116,6 @@ int main(void)
   ISL29125_Config(&hi2c1, CFG1_MODE_RGB | CFG1_10KLUX | CFG1_12BIT, CFG2_IR_ADJUST_HIGH, CFG3_NO_INT);
   ISL29125_Config(&hi2c3, CFG1_MODE_RGB | CFG1_10KLUX | CFG1_12BIT, CFG2_IR_ADJUST_HIGH, CFG3_NO_INT);
 
-  //Motors & LED Example
-//  HAL_Delay(5000);
-//  HAL_GPIO_TogglePin(GPIOB, GPIO_PIN_14); // Green LED
-//  HAL_GPIO_TogglePin(GPIOB, GPIO_PIN_13); // Blue LED
-//  HAL_GPIO_TogglePin(GPIOC, GPIO_PIN_6); // Red LED
-//  HAL_GPIO_TogglePin(GPIOC, GPIO_PIN_7); // Yellow LED
-//  L298N_Motor_R_Control(&htim1, 0, 50);
-//  L298N_Motor_L_Control(&htim1, 0, 50);
-//  HAL_Delay(1000);
-//  HAL_GPIO_TogglePin(GPIOC, GPIO_PIN_7); // Yellow LED
-//  L298N_Motor_R_Control(&htim1, 1, 50);
-//  L298N_Motor_L_Control(&htim1, 1, 50);
-//  HAL_Delay(1000);
-//  HAL_GPIO_TogglePin(GPIOC, GPIO_PIN_7); // Yellow LED
-//  HAL_GPIO_TogglePin(GPIOC, GPIO_PIN_6); // Red LED
-//  L298N_Motor_R_Control(&htim1, 0, 100);
-//  L298N_Motor_L_Control(&htim1, 0, 100);
-//  HAL_Delay(1000);
-//  HAL_GPIO_TogglePin(GPIOC, GPIO_PIN_7); // Yellow LED
-//  L298N_Motor_R_Control(&htim1, 1, 100);
-//  L298N_Motor_L_Control(&htim1, 1, 100);
-//  HAL_Delay(1000);
-//  HAL_GPIO_TogglePin(GPIOC, GPIO_PIN_7); // Yellow LED
-//  HAL_GPIO_TogglePin(GPIOB, GPIO_PIN_14); // Green LED
-//  L298N_Motor_R_Control(&htim1, 0, 300);
-//  L298N_Motor_L_Control(&htim1, 0, 300);
-//  HAL_Delay(1000);
-//  HAL_GPIO_TogglePin(GPIOC, GPIO_PIN_7); // Yellow LED
-//  L298N_Motor_R_Control(&htim1, 1, 300);
-//  L298N_Motor_L_Control(&htim1, 1, 300);
-//  HAL_Delay(1000);
-//  HAL_GPIO_TogglePin(GPIOC, GPIO_PIN_7); // Yellow LED
-//  HAL_GPIO_TogglePin(GPIOB, GPIO_PIN_13); // Blue LED
-//  L298N_Motor_R_Control(&htim1, 1, 150);
-//  L298N_Motor_L_Control(&htim1, 0, 150);
-//  HAL_Delay(1000);
-//  L298N_Motor_R_Control(&htim1, 0, 150);
-//  L298N_Motor_L_Control(&htim1, 1, 150);
-//  HAL_Delay(1000);
-//  L298N_Motors_Stop(&htim1);
   /* USER CODE END 2 */
 
   /* Infinite loop */
@@ -188,44 +148,37 @@ int main(void)
     color_data_R[1] = ISL29125_ReadBlue(&hi2c3);
     color_data_R[2] = ISL29125_ReadGreen(&hi2c3);
 
-    // LEFT SENSOR Red Tape Detection Data, 16Bit Data (Experiemental):
-    // Red: 281-337, Blue: 174-248, Green: 205-280
-//    if (260 < color_data_L[0] && color_data_L[0] < 360
-//     && 140 < color_data_L[1] && color_data_L[1] < 280
-//     && 180 < color_data_L[2] && color_data_L[2] < 300)
-//    {
-//      HAL_GPIO_WritePin(GPIOC, GPIO_PIN_6, GPIO_PIN_SET); // Red LED
-//    } else {
-//      HAL_GPIO_WritePin(GPIOC, GPIO_PIN_6, GPIO_PIN_RESET); // Red LED
-//    }
-
-    // LEFT SENSOR Red Tape Detection Data, 12Bit Data (Experiemental):
-    // Red: 19-43, Blue: 13-70, Green: 15-76
     if (18 < color_data_L[0] && color_data_L[0] < 46
      && 12 < color_data_L[1] && color_data_L[1] < 73
      && 14 < color_data_L[2] && color_data_L[2] < 79)
     {
+      // LEFT SENSOR Red Tape Detection Data, 12Bit Data (Experiemental):
+      // Red: 19-43, Blue: 13-70, Green: 15-76
       HAL_GPIO_WritePin(GPIOC, GPIO_PIN_7, GPIO_PIN_SET); // Yellow LED
-    } else {
-      HAL_GPIO_WritePin(GPIOC, GPIO_PIN_7, GPIO_PIN_RESET); // Yellow LED
-    }
+      L298N_Motor_L_Control(&htim1, 1, 80);
+      L298N_Motor_R_Control(&htim1, 0, 80);
 
-    // RIGHT SENSOR Red Tape Detection Data, 12Bit Data (Experiemental):
-    // Red: 33- ~55, Blue: 17-59, Green: 23-67
-    if (32 < color_data_R[0] && color_data_R[0] < 58
-     && 16 < color_data_R[1] && color_data_R[1] < 62
-     && 22 < color_data_R[2] && color_data_R[2] < 70)
+    } else if (32 < color_data_R[0] && color_data_R[0] < 58
+            && 16 < color_data_R[1] && color_data_R[1] < 62
+            && 22 < color_data_R[2] && color_data_R[2] < 70)
     {
+      // RIGHT SENSOR Red Tape Detection Data, 12Bit Data (Experiemental):
+      // Red: 33- ~55, Blue: 17-59, Green: 23-67
       HAL_GPIO_WritePin(GPIOC, GPIO_PIN_6, GPIO_PIN_SET); // Red LED
+      L298N_Motor_L_Control(&htim1, 0, 80);
+      L298N_Motor_R_Control(&htim1, 1, 80);
+
     } else {
       HAL_GPIO_WritePin(GPIOC, GPIO_PIN_6, GPIO_PIN_RESET); // Red LED
+      HAL_GPIO_WritePin(GPIOC, GPIO_PIN_7, GPIO_PIN_RESET); // Yellow LED
+      L298N_Motor_L_Control(&htim1, 0, 80);
+      L298N_Motor_R_Control(&htim1, 0, 80);
     }
 
-
-    char buf[64];
-    sprintf(buf, "Left | Red: %d, Blue: %d, Green: %d | Right | Red: %d, Blue: %d, Green: %d |\r\n",
-        color_data_L[0], color_data_L[1], color_data_L[2], color_data_R[0], color_data_R[1], color_data_R[2]);
-    HAL_UART_Transmit(&huart2, buf, strlen(buf), HAL_MAX_DELAY);
+//    char buf[64];
+//    sprintf(buf, "Left | Red: %d, Blue: %d, Green: %d | Right | Red: %d, Blue: %d, Green: %d |\r\n",
+//        color_data_L[0], color_data_L[1], color_data_L[2], color_data_R[0], color_data_R[1], color_data_R[2]);
+//    HAL_UART_Transmit(&huart2, buf, strlen(buf), HAL_MAX_DELAY);
 
     /* USER CODE END WHILE */
 
