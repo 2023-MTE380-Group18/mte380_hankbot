@@ -130,8 +130,8 @@ int main(void)
   Servo_Wrist_Up(&htim3);
   HAL_Delay(500);
 
-  L298N_Motor_R_Control(&htim1, 0, 150);
-  L298N_Motor_L_Control(&htim1, 1, 150);
+  L298N_Motor_R_Control(&htim1, 0, 100);
+  L298N_Motor_L_Control(&htim1, 1, 100);
 
   HAL_Delay(900);
 
@@ -140,6 +140,17 @@ int main(void)
 
   Servo_Wrist_Down(&htim3);
   HAL_Delay(500);
+  Servo_Claw_Open(&htim3);
+
+  Servo_Wrist_Up(&htim1);
+  HAL_Delay(500);
+
+  L298N_Motor_R_Control(&htim1, 0, 100);
+  L298N_Motor_L_Control(&htim1, 1, 100);
+
+  HAL_Delay(900);
+
+
 
 
   /* USER CODE END 2 */
