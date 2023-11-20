@@ -17,8 +17,8 @@ uint32_t Encoder_Get_Ticks(TIM_HandleTypeDef *htim)
   return htim->Instance->CNT;
 }
 
-uint32_t Encoder_Get_Distance(TIM_HandleTypeDef *htim)
+// returns distance traveled in m, specifically for each wheel
+double Encoder_Get_Distance(TIM_HandleTypeDef *htim)
 {
-  // TODO Convert Ticks to cm distance traveled
-  return htim->Instance->CNT;
+  return htim->Instance->CNT / (double)TICKS_PER_M;
 }
