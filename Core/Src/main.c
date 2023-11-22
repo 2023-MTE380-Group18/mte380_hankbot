@@ -25,6 +25,7 @@
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
+#include "math.h"
 #include "sparkfun_isl29125.h"
 #include "servo.h"
 #include "l298n_motor_control.h"
@@ -99,6 +100,41 @@ void postDeliveryFindLine()
 
 }
 
+
+// deg - degrees to point-turn
+// dir - 0 is CW, 1 is CCW
+// speed - speed of rotation in RPM
+void Rotate_degrees(uint16_t deg, uint8_t dir, uint16_t speed)
+{
+  HAL_GPIO_WritePin(GPIOB, GPIO_PIN_14, GPIO_PIN_SET); // Green LED
+  // Store current position
+  double initial_pose_L = Encoder_Get_Distance(&htim5);
+  double initial_pose_R = Encoder_Get_Distance(&htim2);
+  double delta_L = 0.0;
+  double delta_R = 0.0;
+  uint8_t rotate_L_done = 0;
+  uint8_t rotate_R_done = 0;
+  double rotate_tick_L = (double)WHEEL_CENTER_DIST * (double)M_PI * ((double)deg/360.0);
+  double rotate_tick_R = (double)WHEEL_CENTER_DIST * (double)M_PI * ((double)deg/360.0);
+  if (dir) { // CCW
+    L298N_Motor_L_Control(&htim1, 1, speed);
+    L298N_Motor_R_Control(&htim1, 0, speed);
+  } else { // CW
+    L298N_Motor_L_Control(&htim1, 0, speed);
+    L298N_Motor_R_Control(&htim1, 1, speed);
+  }
+  do {
+    delta_L = Encoder_Get_Distance(&htim5) - initial_pose_L;
+    delta_R = Encoder_Get_Distance(&htim2) - initial_pose_R;
+    rotate_L_done = fabs(delta_L) >= rotate_tick_L;
+    rotate_R_done = fabs(delta_R) >= rotate_tick_R;
+    if (rotate_L_done) L298N_Motor_L_Control(&htim1, 1, 0);
+    if (rotate_R_done) L298N_Motor_R_Control(&htim1, 0, 0);
+  } while(!(rotate_L_done && rotate_R_done));
+  L298N_Motors_Stop(&htim1);
+  HAL_GPIO_WritePin(GPIOB, GPIO_PIN_14, GPIO_PIN_SET); // Green LED
+}
+
 /* USER CODE BEGIN PFP */
 
 /* USER CODE END PFP */
@@ -122,8 +158,8 @@ int main(void)
   double encoder_dist_l;
 
   // Robot Data
-  uint16_t speed = 115;
-  uint16_t turning_speed = 70;
+  uint16_t speed = 110;
+  uint16_t turning_speed = 80;
   uint8_t blue_detected_L = 0;
   uint8_t blue_detected_R = 0;
   uint8_t red_both_detected = 0;
@@ -179,6 +215,7 @@ int main(void)
   HAL_GPIO_WritePin(GPIOB, GPIO_PIN_14, GPIO_PIN_RESET); // Green LED
   HAL_Delay(3000);
 
+
   // *** State 1: Line Following Sequence ***
   while(!(blue_detected_L && blue_detected_R))
   {
@@ -199,14 +236,14 @@ int main(void)
 //    sprintf(MSG, "TIM2 (Right) Distance = %f, TIM5 (Left) Distance = %f  | \r\n ", encoder_dist_r, encoder_dist_l);
 //    HAL_UART_Transmit(&huart2, MSG, strlen(MSG), HAL_MAX_DELAY); // Print to UART Terminal
 
-    if ((encoder_dist_r + encoder_dist_l)/2 > 1.6) {
+    if ((encoder_dist_r + encoder_dist_l)/2 > CURVATURE_DIST) {
       HAL_GPIO_WritePin(GPIOC, GPIO_PIN_7, GPIO_PIN_SET); // Yellow LED
       speed = 70;
       turning_speed = 70;
     } else {
       HAL_GPIO_WritePin(GPIOC, GPIO_PIN_7, GPIO_PIN_RESET); // Yellow LED
-      speed = 115;
-      turning_speed = 70;
+      speed = 110;
+      turning_speed = 90;
     }
 
     // LEFT SENSOR Blue Bullseye Detection, indicated by Blue LED
@@ -234,7 +271,7 @@ int main(void)
      && 14 < color_data_L[2] && color_data_L[2] < 45) // Green: 14-45
     {
       HAL_GPIO_WritePin(GPIOC, GPIO_PIN_6, GPIO_PIN_SET); // Red LED
-      if(!blue_detected_L) L298N_Motor_L_Control(&htim1, 1, 25);
+      if(!blue_detected_L) L298N_Motor_L_Control(&htim1, 1, 30);
       if(!blue_detected_R) L298N_Motor_R_Control(&htim1, 0, turning_speed);
 
     // RIGHT SENSOR Red Tape Experiemental Detection Data, 12Bit Data:
@@ -244,7 +281,7 @@ int main(void)
     {
       HAL_GPIO_WritePin(GPIOC, GPIO_PIN_6, GPIO_PIN_SET); // Red LED
       if(!blue_detected_L) L298N_Motor_L_Control(&htim1, 0, turning_speed);
-      if(!blue_detected_R) L298N_Motor_R_Control(&htim1, 1, 25);
+      if(!blue_detected_R) L298N_Motor_R_Control(&htim1, 1, 30);
 
     } else {
       HAL_GPIO_WritePin(GPIOC, GPIO_PIN_6, GPIO_PIN_RESET); // Red LED
@@ -307,7 +344,7 @@ int main(void)
   double curr_pos = (Encoder_Get_Distance(&htim2) + Encoder_Get_Distance(&htim5))/2;
   double delta = 0.0;
   // Drive backwards for (BACKING_DIST) [m]
-  while(delta < 0.05) {
+  while(delta < BACKING_DIST) {
     encoder_dist_r = Encoder_Get_Distance(&htim2);
     encoder_dist_l = Encoder_Get_Distance(&htim5);
     delta = curr_pos - (encoder_dist_r + encoder_dist_l)/2;
@@ -333,10 +370,10 @@ int main(void)
 
   humanDelivery();
 
-  postDeliveryFindLine();
+  Rotate_degrees(180, 0, 100);
 
-  speed = 100;
-  turning_speed = 70;
+  speed = 95;
+  turning_speed = 85;
 
   while(!red_both_detected){
 	color_data_L[0] = ISL29125_ReadRed(&hi2c1);
@@ -371,7 +408,7 @@ int main(void)
 	 && 14 < color_data_L[2] && color_data_L[2] < 45) // Green: 14-45
 	{
 	  HAL_GPIO_WritePin(GPIOC, GPIO_PIN_6, GPIO_PIN_SET); // Red LED
-	  L298N_Motor_L_Control(&htim1, 1, 25);
+	  L298N_Motor_L_Control(&htim1, 1, 30);
 	  L298N_Motor_R_Control(&htim1, 0, turning_speed);
 
 	// RIGHT SENSOR Red Tape Experiemental Detection Data, 12Bit Data:
@@ -381,7 +418,7 @@ int main(void)
 	{
 	  HAL_GPIO_WritePin(GPIOC, GPIO_PIN_6, GPIO_PIN_SET); // Red LED
 	  L298N_Motor_L_Control(&htim1, 0, turning_speed);
-	  L298N_Motor_R_Control(&htim1, 1, 25);
+	  L298N_Motor_R_Control(&htim1, 1, 30);
 
 	} else {
 	  HAL_GPIO_WritePin(GPIOC, GPIO_PIN_6, GPIO_PIN_RESET); // Red LED

@@ -18,6 +18,8 @@ static const double TICKS_PER_CM = 75.97; // 75.97 ticks/cm
 static const double MAX_TICKS = 65535;
 static const double MAX_DIST = MAX_TICKS/TICKS_PER_M; // 65535 / 7597 = 8.6264 m
 
+static const double WHEEL_CENTER_DIST = 0.1068;
+
 void Encoder_Init(TIM_HandleTypeDef *htim);
 uint32_t Encoder_Get_Ticks(TIM_HandleTypeDef *htim);
 double Encoder_Get_Distance(TIM_HandleTypeDef *htim);
