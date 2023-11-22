@@ -89,6 +89,13 @@ void humanDelivery()
 
 void postDeliveryFindLine()
 {
+	L298N_Motor_R_Control(&htim1, 0, 90);
+	L298N_Motor_L_Control(&htim1, 1, 90);
+
+	HAL_Delay(2700);
+
+	L298N_Motor_R_Control(&htim1, 0, 0);
+	L298N_Motor_L_Control(&htim1, 1, 0);
 
 }
 
@@ -119,6 +126,7 @@ int main(void)
   uint16_t turning_speed = 70;
   uint8_t blue_detected_L = 0;
   uint8_t blue_detected_R = 0;
+  uint8_t red_both_detected = 0;
 
 
   /* USER CODE END 1 */
@@ -160,10 +168,10 @@ int main(void)
   ISL29125_Config(&hi2c3, CFG1_MODE_RGB | CFG1_10KLUX | CFG1_12BIT, CFG2_IR_ADJUST_HIGH, CFG3_NO_INT);
 
   // LED Test & Delay Code Execution
-  HAL_GPIO_WritePin(GPIOC, GPIO_PIN_6, GPIO_PIN_RESET); // Red LED
-  HAL_GPIO_WritePin(GPIOC, GPIO_PIN_7, GPIO_PIN_RESET); // Yellow LED
-  HAL_GPIO_WritePin(GPIOB, GPIO_PIN_13, GPIO_PIN_RESET); // Blue LED
-  HAL_GPIO_WritePin(GPIOB, GPIO_PIN_14, GPIO_PIN_RESET); // Green LED
+  HAL_GPIO_WritePin(GPIOC, GPIO_PIN_6, GPIO_PIN_SET); // Red LED
+  HAL_GPIO_WritePin(GPIOC, GPIO_PIN_7, GPIO_PIN_SET); // Yellow LED
+  HAL_GPIO_WritePin(GPIOB, GPIO_PIN_13, GPIO_PIN_SET); // Blue LED
+  HAL_GPIO_WritePin(GPIOB, GPIO_PIN_14, GPIO_PIN_SET); // Green LED
   HAL_Delay(1000);
   HAL_GPIO_WritePin(GPIOC, GPIO_PIN_6, GPIO_PIN_RESET); // Red LED
   HAL_GPIO_WritePin(GPIOC, GPIO_PIN_7, GPIO_PIN_RESET); // Yellow LED
@@ -324,6 +332,68 @@ int main(void)
 
 
   humanDelivery();
+
+  postDeliveryFindLine();
+
+  speed = 100;
+  turning_speed = 70;
+
+  while(!red_both_detected){
+	color_data_L[0] = ISL29125_ReadRed(&hi2c1);
+	color_data_L[1] = ISL29125_ReadBlue(&hi2c1);
+	color_data_L[2] = ISL29125_ReadGreen(&hi2c1);
+	color_data_R[0] = ISL29125_ReadRed(&hi2c3);
+	color_data_R[1] = ISL29125_ReadBlue(&hi2c3);
+	color_data_R[2] = ISL29125_ReadGreen(&hi2c3);
+	encoder_dist_r = Encoder_Get_Distance(&htim2);
+	encoder_dist_l = Encoder_Get_Distance(&htim5);
+
+	//When both sensors detect red, then break out the loop
+	if((18 < color_data_L[0] && color_data_L[0] < 35  // Red: 18-35
+		&& 12 < color_data_L[1] && color_data_L[1] < 30  // Blue: 12-30
+		&& 14 < color_data_L[2] && color_data_L[2] < 45) &&
+		(32 < color_data_R[0] && color_data_R[0] < 58  // Red: 32-58
+		&& 16 < color_data_R[1] && color_data_R[1] < 50  // Blue: 16-50
+		&& 22 < color_data_R[2] && color_data_R[2] < 70)
+	)
+	{
+		red_both_detected = 1;
+		HAL_GPIO_WritePin(GPIOC, GPIO_PIN_6, GPIO_PIN_SET); // Red LED
+		HAL_GPIO_WritePin(GPIOC, GPIO_PIN_7, GPIO_PIN_SET); // Yellow LED
+		HAL_GPIO_WritePin(GPIOB, GPIO_PIN_13, GPIO_PIN_SET); // Blue LED
+		HAL_GPIO_WritePin(GPIOB, GPIO_PIN_14, GPIO_PIN_SET); // Green LED
+	}
+
+	// Line Following, indicated by Red LED
+	// LEFT SENSOR Red Tape Detection Experiemental Data, 12Bit Data:
+	else if (18 < color_data_L[0] && color_data_L[0] < 35  // Red: 18-35
+	 && 12 < color_data_L[1] && color_data_L[1] < 30  // Blue: 12-30
+	 && 14 < color_data_L[2] && color_data_L[2] < 45) // Green: 14-45
+	{
+	  HAL_GPIO_WritePin(GPIOC, GPIO_PIN_6, GPIO_PIN_SET); // Red LED
+	  L298N_Motor_L_Control(&htim1, 1, 25);
+	  L298N_Motor_R_Control(&htim1, 0, turning_speed);
+
+	// RIGHT SENSOR Red Tape Experiemental Detection Data, 12Bit Data:
+	} else if (32 < color_data_R[0] && color_data_R[0] < 58  // Red: 32-58
+			&& 16 < color_data_R[1] && color_data_R[1] < 50  // Blue: 16-50
+			&& 22 < color_data_R[2] && color_data_R[2] < 70) // Green: 22-70
+	{
+	  HAL_GPIO_WritePin(GPIOC, GPIO_PIN_6, GPIO_PIN_SET); // Red LED
+	  L298N_Motor_L_Control(&htim1, 0, turning_speed);
+	  L298N_Motor_R_Control(&htim1, 1, 25);
+
+	} else {
+	  HAL_GPIO_WritePin(GPIOC, GPIO_PIN_6, GPIO_PIN_RESET); // Red LED
+	  L298N_Motor_L_Control(&htim1, 0, speed);
+	  L298N_Motor_R_Control(&htim1, 0, speed);
+	}
+  }
+
+  L298N_Motor_L_Control(&htim1, 0, 0);
+  L298N_Motor_R_Control(&htim1, 0, 0);
+
+
 
   /*
   uint8_t tempCounter = 0;
