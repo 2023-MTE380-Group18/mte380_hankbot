@@ -58,6 +58,35 @@
 
 /* Private function prototypes -----------------------------------------------*/
 void SystemClock_Config(void);
+
+void endgame1()
+{
+	L298N_Motor_R_Control(&htim1, 1, 150);
+	L298N_Motor_L_Control(&htim1, 1, 50);
+
+	HAL_Delay(1000);
+
+
+
+	L298N_Motor_R_Control(&htim1, 0, 150);
+	L298N_Motor_L_Control(&htim1, 1, 150);
+	HAL_Delay(700);
+
+	L298N_Motor_R_Control(&htim1, 0, 150);
+	L298N_Motor_L_Control(&htim1, 0, 150);
+	HAL_Delay(250);
+
+
+	L298N_Motor_R_Control(&htim1, 0, 0);
+	L298N_Motor_L_Control(&htim1, 0, 0);
+
+
+	Servo_Wrist_Down(&htim3);
+	HAL_Delay(100);
+	Servo_Claw_Open(&htim3);
+
+}
+
 /* USER CODE BEGIN PFP */
 
 /* USER CODE END PFP */
@@ -135,7 +164,6 @@ int main(void)
   HAL_GPIO_WritePin(GPIOB, GPIO_PIN_13, GPIO_PIN_RESET); // Blue LED
   HAL_GPIO_WritePin(GPIOB, GPIO_PIN_14, GPIO_PIN_RESET); // Green LED
   HAL_Delay(3000);
-
 
   // *** State 1: Line Following Sequence ***
   while(!(blue_detected_L && blue_detected_R))
@@ -279,23 +307,20 @@ int main(void)
   HAL_Delay(500);
   Servo_Wrist_Up(&htim3);
   HAL_Delay(500);
-  L298N_Motor_R_Control(&htim1, 0, 150);
-  L298N_Motor_L_Control(&htim1, 1, 150);
-  HAL_Delay(900);
-  L298N_Motor_R_Control(&htim1, 0, 0);
-  L298N_Motor_L_Control(&htim1, 1, 0);
-  Servo_Wrist_Down(&htim3);
-  HAL_Delay(500);
-  Servo_Claw_Open(&htim3);
-  Servo_Wrist_Up(&htim1);
-  HAL_Delay(500);
-  L298N_Motor_R_Control(&htim1, 0, 150);
-  L298N_Motor_L_Control(&htim1, 1, 150);
-  HAL_Delay(900);
-  L298N_Motors_Stop(&htim1);
-
 
   // *** State 3: Delivery Sequence ***
+
+
+  endgame1();
+
+  /*
+  uint8_t tempCounter = 0;
+  uint8_t MSG[50] = {'\0'};
+
+  sprintf(MSG, "TIM2 (Right) Distance = %f, TIM5 (Left) Distance = %f  | \r\n ", Encoder_Get_Distance(&htim2), Encoder_Get_Distance(&htim5));
+  HAL_UART_Transmit(&huart2, MSG, strlen(MSG), HAL_MAX_DELAY); // Print to UART Terminal
+   */
+
 
 
   /* USER CODE END 2 */
@@ -304,6 +329,7 @@ int main(void)
   /* USER CODE BEGIN WHILE */
   while (1)
   {
+
 
     /* USER CODE END WHILE */
 
