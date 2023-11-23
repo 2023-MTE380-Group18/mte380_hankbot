@@ -85,18 +85,62 @@ void humanDelivery()
 	Servo_Claw_Open(&htim3);
 	HAL_Delay(100);
 	Servo_Wrist_Up(&htim3);
-
 }
 
-void postDeliveryFindLine()
+void humanDeliveryAutonomated()
 {
-	L298N_Motor_R_Control(&htim1, 0, 90);
-	L298N_Motor_L_Control(&htim1, 1, 90);
-
-	HAL_Delay(2700);
-
-	L298N_Motor_R_Control(&htim1, 0, 0);
+	//simulate traveling to end so encoders don't overflow
+	L298N_Motor_L_Control(&htim1, 0, 150);
+	L298N_Motor_R_Control(&htim1, 0, 150);
+	HAL_Delay(2000);
 	L298N_Motor_L_Control(&htim1, 1, 0);
+	L298N_Motor_R_Control(&htim1, 1, 0);
+
+
+	uint8_t dCounter = 0;
+
+	double stageOneDistance = 0.263;
+	double deliverySpeed = 150;
+	double fFactor = 1.6;
+
+	double current_pose_L = Encoder_Get_Distance(&htim5);
+	double current_pose_R = Encoder_Get_Distance(&htim2);
+
+	double targetPoseL = current_pose_R + stageOneDistance;
+
+
+
+
+	uint8_t MSG[50] = {'\0'};
+	//sprintf(MSG, "TIM5 (Left) Distance = %f  targetPoseL: %f  deliverySpeed: %f| \r\n ", current_pose_L, targetPoseL, deliverySpeed);
+	//HAL_UART_Transmit(&huart2, MSG, strlen(MSG), HAL_MAX_DELAY); // Print to UART Terminal
+
+	while(current_pose_R > targetPoseL)
+	{
+		L298N_Motor_L_Control(&htim1, 1, deliverySpeed/1.6);
+		L298N_Motor_R_Control(&htim1, 1, deliverySpeed);
+		HAL_Delay(100);
+		L298N_Motor_L_Control(&htim1, 1, 0);
+		L298N_Motor_R_Control(&htim1, 1, 0);
+		HAL_Delay(100);
+
+		current_pose_L = current_pose_L + Encoder_Get_Distance(&htim5);
+		current_pose_R = current_pose_R + Encoder_Get_Distance(&htim2);
+
+		//dCounter++;
+	}
+
+
+	L298N_Motor_L_Control(&htim1, 1, 0);
+	L298N_Motor_R_Control(&htim1, 1, 0);
+	sprintf(MSG, "End sequence \r\n");
+	HAL_UART_Transmit(&huart2, MSG, strlen(MSG), HAL_MAX_DELAY); // Print to UART Terminal
+
+	HAL_GPIO_WritePin(GPIOC, GPIO_PIN_6, GPIO_PIN_SET); // Red LED
+	HAL_GPIO_WritePin(GPIOC, GPIO_PIN_7, GPIO_PIN_SET); // Yellow LED
+	HAL_GPIO_WritePin(GPIOB, GPIO_PIN_13, GPIO_PIN_SET); // Blue LED
+	HAL_GPIO_WritePin(GPIOB, GPIO_PIN_14, GPIO_PIN_SET);
+
 
 }
 
@@ -158,10 +202,12 @@ int main(void)
   double encoder_dist_l;
 
   // Robot Data
-  uint16_t speed = 110;
-  uint16_t turning_speed = 80;
+  uint16_t speed = 80;
+  uint16_t turning_speed = 60;
   uint8_t blue_detected_L = 0;
   uint8_t blue_detected_R = 0;
+  uint8_t green_detected_L = 0;
+  uint8_t green_detected_R = 0;
   uint8_t red_both_detected = 0;
 
 
@@ -213,7 +259,33 @@ int main(void)
   HAL_GPIO_WritePin(GPIOC, GPIO_PIN_7, GPIO_PIN_RESET); // Yellow LED
   HAL_GPIO_WritePin(GPIOB, GPIO_PIN_13, GPIO_PIN_RESET); // Blue LED
   HAL_GPIO_WritePin(GPIOB, GPIO_PIN_14, GPIO_PIN_RESET); // Green LED
-  HAL_Delay(3000);
+
+  HAL_Delay(1000);
+
+
+  //Delivery by colour
+
+/*
+  while(1)
+  {
+	  // Update sensor data
+	  color_data_L[0] = ISL29125_ReadRed(&hi2c1);
+	  color_data_L[1] = ISL29125_ReadBlue(&hi2c1);
+	  color_data_L[2] = ISL29125_ReadGreen(&hi2c1);
+	  color_data_R[0] = ISL29125_ReadRed(&hi2c3);
+	  color_data_R[1] = ISL29125_ReadBlue(&hi2c3);
+	  color_data_R[2] = ISL29125_ReadGreen(&hi2c3);
+	// Debug Printout
+	char buf[64];
+	sprintf(buf, "Left | Red: %d, Blue: %d, Green: %d | Right | Red: %d, Blue: %d, Green: %d |\r\n",
+	   color_data_L[0], color_data_L[1], color_data_L[2], color_data_R[0], color_data_R[1], color_data_R[2]);
+	HAL_UART_Transmit(&huart2, buf, strlen(buf), HAL_MAX_DELAY);
+  }
+
+  while(1){}
+*/
+
+
 
 
   // *** State 1: Line Following Sequence ***
@@ -229,6 +301,11 @@ int main(void)
     encoder_dist_r = Encoder_Get_Distance(&htim2);
     encoder_dist_l = Encoder_Get_Distance(&htim5);
 
+    HAL_GPIO_WritePin(GPIOC, GPIO_PIN_6, GPIO_PIN_RESET); // Red LED
+    HAL_GPIO_WritePin(GPIOC, GPIO_PIN_7, GPIO_PIN_RESET); // Yellow LED
+    HAL_GPIO_WritePin(GPIOB, GPIO_PIN_13, GPIO_PIN_RESET); // Blue LED
+    HAL_GPIO_WritePin(GPIOB, GPIO_PIN_14, GPIO_PIN_RESET); // Green LED
+
     // Check how far across curvature traveled.
     // Slow down at the end, indicated by Yellow LED
 //    uint8_t MSG[50] = {'\0'};
@@ -238,12 +315,12 @@ int main(void)
 
     if ((encoder_dist_r + encoder_dist_l)/2 > CURVATURE_DIST) {
       HAL_GPIO_WritePin(GPIOC, GPIO_PIN_7, GPIO_PIN_SET); // Yellow LED
-      speed = 70;
+      speed = 80;
       turning_speed = 70;
     } else {
       HAL_GPIO_WritePin(GPIOC, GPIO_PIN_7, GPIO_PIN_RESET); // Yellow LED
-      speed = 110;
-      turning_speed = 90;
+      speed = 70;
+      turning_speed = 70;
     }
 
     // LEFT SENSOR Blue Bullseye Detection, indicated by Blue LED
@@ -271,6 +348,7 @@ int main(void)
      && 14 < color_data_L[2] && color_data_L[2] < 45) // Green: 14-45
     {
       HAL_GPIO_WritePin(GPIOC, GPIO_PIN_6, GPIO_PIN_SET); // Red LED
+      HAL_GPIO_WritePin(GPIOC, GPIO_PIN_7, GPIO_PIN_SET); // Yellow
       if(!blue_detected_L) L298N_Motor_L_Control(&htim1, 1, 30);
       if(!blue_detected_R) L298N_Motor_R_Control(&htim1, 0, turning_speed);
 
@@ -280,6 +358,7 @@ int main(void)
             && 22 < color_data_R[2] && color_data_R[2] < 70) // Green: 22-70
     {
       HAL_GPIO_WritePin(GPIOC, GPIO_PIN_6, GPIO_PIN_SET); // Red LED
+      HAL_GPIO_WritePin(GPIOB, GPIO_PIN_14, GPIO_PIN_SET); // Blue
       if(!blue_detected_L) L298N_Motor_L_Control(&htim1, 0, turning_speed);
       if(!blue_detected_R) L298N_Motor_R_Control(&htim1, 1, 30);
 
@@ -365,67 +444,221 @@ int main(void)
   Servo_Wrist_Up(&htim3);
   HAL_Delay(100);
 
+
+
   // *** State 3: Delivery Sequence ***
 
 
-  humanDelivery();
+  //humanDelivery();
 
-  Rotate_degrees(180, 0, 100);
+  //drive back 24 cm
+  /*
+  L298N_Motor_R_Control(&htim1, 0, 150);
+  L298N_Motor_L_Control(&htim1, 0, 150);
+  HAL_Delay(2000);
+  L298N_Motor_R_Control(&htim1, 1, 0);
+  L298N_Motor_L_Control(&htim1, 1, 0);
 
-  speed = 95;
-  turning_speed = 85;
 
-  while(!red_both_detected){
+  HAL_GPIO_WritePin(GPIOC, GPIO_PIN_6, GPIO_PIN_SET); // Red LED
+  HAL_Delay(1000);
+  HAL_GPIO_WritePin(GPIOC, GPIO_PIN_7, GPIO_PIN_SET); // Yellow LED
+  HAL_Delay(1000);
+  HAL_GPIO_WritePin(GPIOB, GPIO_PIN_14, GPIO_PIN_SET); // Green LED
+  HAL_Delay(1000);
+  */
+
+  HAL_GPIO_WritePin(GPIOC, GPIO_PIN_6, GPIO_PIN_RESET); // Red LED
+  HAL_GPIO_WritePin(GPIOC, GPIO_PIN_7, GPIO_PIN_RESET); // Yellow LED
+  HAL_GPIO_WritePin(GPIOB, GPIO_PIN_13, GPIO_PIN_RESET); // Blue LED
+  HAL_GPIO_WritePin(GPIOB, GPIO_PIN_14, GPIO_PIN_RESET); // Green LED
+
+  encoder_dist_r = Encoder_Get_Distance(&htim2);
+  double backupTravel = 0;
+
+  double backupDistance = 0.14;
+
+  while(backupTravel < backupDistance)
+  {
+	  L298N_Motor_R_Control(&htim1, 1, 100);
+	  L298N_Motor_L_Control(&htim1, 1, 100);
+	  HAL_Delay(100);
+	  //L298N_Motor_R_Control(&htim1, 1, 0);
+	  //L298N_Motor_L_Control(&htim1, 1, 0);
+
+	  backupTravel = encoder_dist_r - Encoder_Get_Distance(&htim2);
+  }
+
+  L298N_Motor_R_Control(&htim1, 1, 0);
+  L298N_Motor_L_Control(&htim1, 1, 0);
+
+  HAL_Delay(100);
+
+  Rotate_degrees(40, 1, 100);
+
+  //Drive forward till green detected
+
+  L298N_Motor_R_Control(&htim1, 0, 70);
+  L298N_Motor_L_Control(&htim1, 0, 70);
+
+  HAL_Delay(500);
+
+  uint8_t green_detected_L_residual = 0;
+  uint8_t green_detected_R_residual = 0;
+
+
+  while(!(green_detected_L && green_detected_R))
+  {
 	color_data_L[0] = ISL29125_ReadRed(&hi2c1);
 	color_data_L[1] = ISL29125_ReadBlue(&hi2c1);
 	color_data_L[2] = ISL29125_ReadGreen(&hi2c1);
 	color_data_R[0] = ISL29125_ReadRed(&hi2c3);
 	color_data_R[1] = ISL29125_ReadBlue(&hi2c3);
 	color_data_R[2] = ISL29125_ReadGreen(&hi2c3);
-	encoder_dist_r = Encoder_Get_Distance(&htim2);
-	encoder_dist_l = Encoder_Get_Distance(&htim5);
 
-	//When both sensors detect red, then break out the loop
-	if((18 < color_data_L[0] && color_data_L[0] < 35  // Red: 18-35
-		&& 12 < color_data_L[1] && color_data_L[1] < 30  // Blue: 12-30
-		&& 14 < color_data_L[2] && color_data_L[2] < 45) &&
-		(32 < color_data_R[0] && color_data_R[0] < 58  // Red: 32-58
-		&& 16 < color_data_R[1] && color_data_R[1] < 50  // Blue: 16-50
-		&& 22 < color_data_R[2] && color_data_R[2] < 70)
-	)
+	//Left
+	if(5 < color_data_L[0] && color_data_L[0] < 15 && //assume left red range is 5-20
+		18 < color_data_L[1] && color_data_L[1] < 35 && // left blue range is 25-35
+		20 < color_data_L[2] && color_data_L[2] < 40)
 	{
-		red_both_detected = 1;
-		HAL_GPIO_WritePin(GPIOC, GPIO_PIN_6, GPIO_PIN_SET); // Red LED
+		L298N_Motor_L_Control(&htim1, 1, 0);
+		green_detected_L = 1;
+
 		HAL_GPIO_WritePin(GPIOC, GPIO_PIN_7, GPIO_PIN_SET); // Yellow LED
-		HAL_GPIO_WritePin(GPIOB, GPIO_PIN_13, GPIO_PIN_SET); // Blue LED
-		HAL_GPIO_WritePin(GPIOB, GPIO_PIN_14, GPIO_PIN_SET); // Green LED
+
 	}
 
-	// Line Following, indicated by Red LED
-	// LEFT SENSOR Red Tape Detection Experiemental Data, 12Bit Data:
-	else if (18 < color_data_L[0] && color_data_L[0] < 35  // Red: 18-35
-	 && 12 < color_data_L[1] && color_data_L[1] < 30  // Blue: 12-30
-	 && 14 < color_data_L[2] && color_data_L[2] < 45) // Green: 14-45
+	//Right
+	if(12 < color_data_R[0] && color_data_R[0] < 25 &&
+		20 < color_data_R[1] && color_data_R[1] < 36 &&
+		28 < color_data_R[2] && color_data_R[2] < 50)
 	{
-	  HAL_GPIO_WritePin(GPIOC, GPIO_PIN_6, GPIO_PIN_SET); // Red LED
-	  L298N_Motor_L_Control(&htim1, 1, 30);
-	  L298N_Motor_R_Control(&htim1, 0, turning_speed);
-
-	// RIGHT SENSOR Red Tape Experiemental Detection Data, 12Bit Data:
-	} else if (32 < color_data_R[0] && color_data_R[0] < 58  // Red: 32-58
-			&& 16 < color_data_R[1] && color_data_R[1] < 50  // Blue: 16-50
-			&& 22 < color_data_R[2] && color_data_R[2] < 70) // Green: 22-70
-	{
-	  HAL_GPIO_WritePin(GPIOC, GPIO_PIN_6, GPIO_PIN_SET); // Red LED
-	  L298N_Motor_L_Control(&htim1, 0, turning_speed);
-	  L298N_Motor_R_Control(&htim1, 1, 30);
-
-	} else {
-	  HAL_GPIO_WritePin(GPIOC, GPIO_PIN_6, GPIO_PIN_RESET); // Red LED
-	  L298N_Motor_L_Control(&htim1, 0, speed);
-	  L298N_Motor_R_Control(&htim1, 0, speed);
+		L298N_Motor_R_Control(&htim1, 1, 0);
+		green_detected_R = 1;
+		HAL_GPIO_WritePin(GPIOC, GPIO_PIN_6, GPIO_PIN_SET); // Red LED
 	}
   }
+
+  L298N_Motor_R_Control(&htim1, 1, 100);
+  L298N_Motor_L_Control(&htim1, 1, 100);
+  HAL_Delay(500);
+  L298N_Motor_R_Control(&htim1, 1, 0);
+  L298N_Motor_L_Control(&htim1, 1, 0);
+
+  Servo_Wrist_Down(&htim3);
+  Servo_Claw_Open(&htim3);
+  HAL_Delay(500);
+  Servo_Wrist_Up(&htim3);
+
+  L298N_Motor_R_Control(&htim1, 1, 70);
+  L298N_Motor_L_Control(&htim1, 1, 70);
+  HAL_Delay(500);
+
+  Rotate_degrees(180, 0, 100);
+
+  L298N_Motor_R_Control(&htim1, 0, 60);
+  L298N_Motor_L_Control(&htim1, 0, 60);
+  HAL_Delay(500);
+
+
+  speed = 80;
+  turning_speed = 60;
+
+  red_both_detected = 0;
+
+  // *** State 1: Line Following Sequence ***
+  encoder_dist_r = Encoder_Get_Distance(&htim2);
+  double currentTravel = encoder_dist_r;
+  double minDistanceTraveled = 1.0;
+
+  L298N_Motor_R_Control(&htim1, 0, 60);
+  L298N_Motor_L_Control(&htim1, 0, 60);
+  HAL_Delay(100);
+  //L298N_Motor_R_Control(&htim1, 1, 0);
+  //L298N_Motor_L_Control(&htim1, 1, 0);
+
+
+  while(!red_both_detected)
+  {
+    // Update sensor data
+    color_data_L[0] = ISL29125_ReadRed(&hi2c1);
+    color_data_L[1] = ISL29125_ReadBlue(&hi2c1);
+    color_data_L[2] = ISL29125_ReadGreen(&hi2c1);
+    color_data_R[0] = ISL29125_ReadRed(&hi2c3);
+    color_data_R[1] = ISL29125_ReadBlue(&hi2c3);
+    color_data_R[2] = ISL29125_ReadGreen(&hi2c3);
+    encoder_dist_r = Encoder_Get_Distance(&htim2);
+    encoder_dist_l = Encoder_Get_Distance(&htim5);
+
+    HAL_GPIO_WritePin(GPIOC, GPIO_PIN_6, GPIO_PIN_RESET); // Red LED
+    HAL_GPIO_WritePin(GPIOC, GPIO_PIN_7, GPIO_PIN_RESET);
+    HAL_GPIO_WritePin(GPIOB, GPIO_PIN_14, GPIO_PIN_RESET);
+
+    currentTravel = Encoder_Get_Distance(&htim2) - encoder_dist_r;
+
+    // Check how far across curvature traveled.
+    // Slow down at the end, indicated by Yellow LED
+//    uint8_t MSG[50] = {'\0'};
+//
+//    sprintf(MSG, "TIM2 (Right) Distance = %f, TIM5 (Left) Distance = %f  | \r\n ", encoder_dist_r, encoder_dist_l);
+//    HAL_UART_Transmit(&huart2, MSG, strlen(MSG), HAL_MAX_DELAY); // Print to UART Terminal
+
+    if ((encoder_dist_r + encoder_dist_l)/2 > CURVATURE_DIST) {
+      HAL_GPIO_WritePin(GPIOC, GPIO_PIN_7, GPIO_PIN_SET); // Yellow LED
+      speed = 70;
+      turning_speed = 70;
+    } else {
+      HAL_GPIO_WritePin(GPIOC, GPIO_PIN_7, GPIO_PIN_RESET); // Yellow LED
+      speed = 50;
+      turning_speed = 30;
+    }
+
+    if (18 < color_data_L[0] && color_data_L[0] < 35  // Red: 18-35
+     && 12 < color_data_L[1] && color_data_L[1] < 30  // Blue: 12-30
+     && 14 < color_data_L[2] && color_data_L[2] < 45 &&
+	 32 < color_data_R[0] && color_data_R[0] < 58  // Red: 32-58
+	 && 16 < color_data_R[1] && color_data_R[1] < 50  // Blue: 16-50
+	 && 22 < color_data_R[2] && color_data_R[2] < 70 &&
+
+	 currentTravel > minDistanceTraveled
+	 ) // Green: 14-45
+    {
+    	red_both_detected = 1;
+    }
+
+
+    // Line Following, indicated by Red LED
+    // LEFT SENSOR Red Tape Detection Experiemental Data, 12Bit Data:
+    if (18 < color_data_L[0] && color_data_L[0] < 35  // Red: 18-35
+     && 12 < color_data_L[1] && color_data_L[1] < 30  // Blue: 12-30
+     && 14 < color_data_L[2] && color_data_L[2] < 45) // Green: 14-45
+    {
+      HAL_GPIO_WritePin(GPIOC, GPIO_PIN_6, GPIO_PIN_SET); // Red LED
+      HAL_GPIO_WritePin(GPIOC, GPIO_PIN_7, GPIO_PIN_SET); // Yellow LED
+      if(!blue_detected_L) L298N_Motor_L_Control(&htim1, 1, 30);
+      if(!blue_detected_R) L298N_Motor_R_Control(&htim1, 0, turning_speed);
+
+    // RIGHT SENSOR Red Tape Experiemental Detection Data, 12Bit Data:
+    } else if (32 < color_data_R[0] && color_data_R[0] < 58  // Red: 32-58
+            && 16 < color_data_R[1] && color_data_R[1] < 50  // Blue: 16-50
+            && 22 < color_data_R[2] && color_data_R[2] < 70) // Green: 22-70
+    {
+      HAL_GPIO_WritePin(GPIOC, GPIO_PIN_6, GPIO_PIN_SET); // Red LED
+      HAL_GPIO_WritePin(GPIOB, GPIO_PIN_13, GPIO_PIN_SET); // Blue LED
+      if(!blue_detected_L) L298N_Motor_L_Control(&htim1, 0, turning_speed);
+      if(!blue_detected_R) L298N_Motor_R_Control(&htim1, 1, 30);
+
+    } else {
+      HAL_GPIO_WritePin(GPIOC, GPIO_PIN_6, GPIO_PIN_RESET); // Red LED
+      if(!blue_detected_L) L298N_Motor_L_Control(&htim1, 0, speed);
+      if(!blue_detected_R) L298N_Motor_R_Control(&htim1, 0, speed);
+    }
+  }
+
+  HAL_GPIO_WritePin(GPIOC, GPIO_PIN_6, GPIO_PIN_SET); // Red LED
+  HAL_GPIO_WritePin(GPIOC, GPIO_PIN_7, GPIO_PIN_SET); // Yellow LED
+  HAL_GPIO_WritePin(GPIOB, GPIO_PIN_13, GPIO_PIN_SET); // Blue LED
+  HAL_GPIO_WritePin(GPIOB, GPIO_PIN_14, GPIO_PIN_SET); // Green LED
 
   L298N_Motor_L_Control(&htim1, 0, 0);
   L298N_Motor_R_Control(&htim1, 0, 0);
